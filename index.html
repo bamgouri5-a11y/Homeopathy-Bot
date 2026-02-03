@@ -20,11 +20,11 @@ body { background:#eef4fb; }
   box-shadow:0 2px 10px rgba(0,0,0,.08)
 }
 .header img{
-  width:48px;height:48px;border-radius:10px;object-fit:cover
+  width:52px;height:52px;border-radius:12px;object-fit:cover
 }
 
 .chat{
-  height:62vh;
+  height:55vh;
   overflow-y:auto;
   padding:16px
 }
@@ -36,7 +36,7 @@ body { background:#eef4fb; }
 .avatar{
   width:40px;height:40px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
-  font-weight:bold;color:#fff
+  font-weight:bold;color:#fff;font-size:14px
 }
 .botA{background:#16a34a}
 .userA{background:#2563eb}
@@ -75,15 +75,28 @@ body { background:#eef4fb; }
 
 <!-- HEADER -->
 <div class="header">
-  <img src="bot.png">
+  <!-- replace bot.png with your logo -->
+  <img src="bot.png" alt="Dr Bhavna Logo">
   <div>
     <div class="text-lg font-bold text-blue-700">
       Dr. Bhavna – Homeopathy Consultation Bot
     </div>
     <div class="text-xs text-gray-500">
-      Classical Homeopathy | Symptom-Based Guidance
+      Classical Homeopathy • Symptom-Based Guidance
     </div>
   </div>
+</div>
+
+<!-- CSV UPLOAD -->
+<div class="max-w-3xl mx-auto mt-4 bg-white p-4 rounded shadow">
+  <h3 class="font-bold text-gray-700 mb-2">
+    Upload Remedy Database (CSV)
+  </h3>
+  <input type="file" id="csvFile" accept=".csv"
+    class="border p-2 w-full rounded">
+  <p class="text-xs text-gray-500 mt-1">
+    CSV overrides default remedies (local use only)
+  </p>
 </div>
 
 <!-- CHAT -->
@@ -92,9 +105,9 @@ body { background:#eef4fb; }
 <!-- INPUT -->
 <div class="inputbar max-w-3xl mx-auto w-full">
   <input id="msg" class="border rounded w-full px-3 py-2 mb-2"
-    placeholder="Describe your symptoms (e.g. headache worse by light, constipation, cold & cough)…">
+    placeholder="Describe symptoms (e.g. headache worse by light, constipation, cold & cough)">
 
-  <div class="flex justify-between">
+  <div class="flex justify-between flex-wrap gap-2">
     <div class="space-x-2">
       <button id="ask" class="bg-blue-600 text-white px-4 py-2 rounded">Ask Dr</button>
       <button id="clear" class="bg-red-500 text-white px-4 py-2 rounded">Clear</button>
@@ -111,51 +124,43 @@ body { background:#eef4fb; }
 drbhavnabamania@gmail.com</a><br><br>
 <strong>Disclaimer:</strong>
 This chatbot provides informational homeopathic guidance only.
-For correct remedy selection, potency & repetition, consult Dr. Bhavna personally.
+Final remedy, potency & repetition require personal consultation.
 </footer>
 
 <script>
-/* ================= HOMEOPATHY MEDICINES ================= */
+/* ================= DEFAULT REMEDIES ================= */
 const medicines = [
 {
  name:"Belladonna",
- keywords:["fever","headache","throbbing","red face","heat","sudden"],
- symptoms:"Sudden onset of high fever, throbbing headache, red hot face, dilated pupils.",
- keynotes:"Sudden violent symptoms, heat, redness, throbbing pains.",
- mind:"Restlessness, delirium, sensitive to light & noise.",
- potency:"30C, 200C",
- dosage:"1 dose every 6–8 hours in acute stage."
+ keywords:["fever","headache","throbbing","red","heat","sudden"],
+ symptoms:"Sudden high fever, throbbing headache, red hot face.",
+ keynotes:"Sudden violent onset, heat, redness.",
+ mind:"Delirium, sensitive to light & noise.",
 },
 {
  name:"Nux Vomica",
- keywords:["constipation","indigestion","irritable","gas","overwork"],
- symptoms:"Constipation with ineffectual urging, indigestion, nausea.",
- keynotes:"Over-worked, irritable, chilly patients.",
- mind:"Anger, impatience, sensitive to cold.",
- potency:"30C",
- dosage:"Once daily or as prescribed."
+ keywords:["constipation","gas","irritable","indigestion","overwork"],
+ symptoms:"Constipation with urging, gastric trouble.",
+ keynotes:"Chilly, overworked persons.",
+ mind:"Irritable, angry.",
 },
 {
  name:"Pulsatilla",
- keywords:["cold","cough","thick discharge","weeping","changeable"],
- symptoms:"Thick bland yellow discharge, mild fever, cough.",
- keynotes:"Changeable symptoms, better in open air.",
+ keywords:["cold","cough","yellow","discharge","changeable"],
+ symptoms:"Thick bland yellow discharge, mild fever.",
+ keynotes:"Better in open air.",
  mind:"Mild, tearful, seeks company.",
- potency:"30C",
- dosage:"One dose, repeat rarely."
 },
 {
  name:"Arnica Montana",
- keywords:["injury","bruise","trauma","sore"],
- symptoms:"Soreness after injury, bruises, body ache.",
- keynotes:"Feels as if beaten; says nothing is wrong.",
- mind:"Fear of being touched.",
- potency:"30C, 200C",
- dosage:"One dose after injury."
+ keywords:["injury","bruise","trauma","sore","pain"],
+ symptoms:"Soreness after injury or shock.",
+ keynotes:"Feels beaten.",
+ mind:"Does not want to be touched.",
 }
 ];
 
-/* ================= CHAT LOGIC ================= */
+/* ================= CHAT FUNCTIONS ================= */
 const chat=document.getElementById("chat");
 const msg=document.getElementById("msg");
 
@@ -163,8 +168,8 @@ function add(type,text,html=false){
   const row=document.createElement("div");
   row.className="row "+type;
   const avatar=document.createElement("div");
-  avatar.className="avatar "+(type=="bot"?"botA":"userA");
-  avatar.innerText=type=="bot"?"Dr":"You";
+  avatar.className="avatar "+(type==="bot"?"botA":"userA");
+  avatar.innerText=type==="bot"?"Dr":"You";
   const bubble=document.createElement("div");
   bubble.className="bubble";
   if(html) bubble.innerHTML=text; else bubble.innerText=text;
@@ -173,31 +178,46 @@ function add(type,text,html=false){
   chat.scrollTop=chat.scrollHeight;
 }
 
+/* Greeting */
+add("bot",
+"Welcome 🙏 I am Dr. Bhavna’s Homeopathy Assistant.\n\n" +
+"Describe your symptoms in detail (location, sensation, worse/better, time). " +
+"This tool gives guidance only — for correct treatment, please consult personally."
+);
+
+/* ================= ASK LOGIC ================= */
 document.getElementById("ask").onclick=()=>{
   if(!msg.value.trim()) return;
-  const userText=msg.value;
+  const userText=msg.value.toLowerCase();
   msg.value="";
   add("user",userText);
 
-  const found=medicines.filter(m =>
-    m.keywords.some(k => userText.toLowerCase().includes(k))
-  );
+  const results = medicines.map(m=>{
+    let score=0;
+    m.keywords.forEach(k=>{
+      if(userText.includes(k)) score++;
+    });
+    return {...m,score};
+  }).filter(m=>m.score>0)
+    .sort((a,b)=>b.score-a.score)
+    .slice(0,2);
 
-  if(!found.length){
-    add("bot","No exact remedy found based on symptoms. Please book an appointment for detailed analysis.");
+  if(!results.length){
+    add("bot","No close remedy match found. Please book an appointment for detailed case-taking.");
     return;
   }
 
   let html="";
-  found.forEach(m=>{
+  results.forEach(m=>{
     html+=`
       <div class="card">
         <h4>${m.name}</h4>
         <p><b>Main symptoms:</b> ${m.symptoms}</p>
-        <p><b>Key notes:</b> ${m.keynotes}</p>
+        <p><b>Keynotes:</b> ${m.keynotes}</p>
         <p><b>Mind & modalities:</b> ${m.mind}</p>
-        <p><b>Potency:</b> ${m.potency}</p>
-        <p><b>Dosage:</b> ${m.dosage}</p>
+        <p class="text-xs text-gray-500 mt-2">
+          Note: Remedy selection & potency require professional consultation.
+        </p>
       </div>
     `;
   });
@@ -206,13 +226,42 @@ document.getElementById("ask").onclick=()=>{
 
 document.getElementById("clear").onclick=()=>chat.innerHTML="";
 
-/* MIC INPUT */
+/* ================= CSV IMPORT ================= */
+document.getElementById("csvFile").addEventListener("change",function(e){
+  const file=e.target.files[0];
+  if(!file) return;
+
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    const rows=ev.target.result.split("\n");
+    medicines.length=0;
+
+    rows.slice(1).forEach(r=>{
+      const c=r.split(",");
+      if(c.length<5) return;
+      medicines.push({
+        name:c[0],
+        keywords:c[1].replace(/"/g,"").split("|"),
+        symptoms:c[2],
+        keynotes:c[3],
+        mind:c[4]
+      });
+    });
+
+    add("bot","📂 Remedy database successfully updated from CSV.");
+  };
+  reader.readAsText(file);
+});
+
+/* ================= MIC ================= */
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 if(SR){
- const r=new SR(); r.lang="en-IN";
- document.getElementById("mic").onclick=()=>r.start();
- r.onresult=e=>msg.value=e.results[0][0].transcript;
+  const r=new SR();
+  r.lang="en-IN";
+  document.getElementById("mic").onclick=()=>r.start();
+  r.onresult=e=>msg.value=e.results[0][0].transcript;
 }
 </script>
+
 </body>
 </html>
