@@ -1,227 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dr. Bhavna – Homeopathy Assistant</title>
-
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.3/dist/tailwind.min.css" rel="stylesheet">
-
-<style>
-body { background:#eef4fb; }
-
-.chat-container {
-  max-width: 820px;
-  margin: auto;
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-}
-
-.header {
-  background: white;
-  padding: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.header img {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-}
-
-.chat-area {
-  flex: 1;
-  padding: 16px;
-  overflow-y: auto;
-}
-
-.msg {
-  display: flex;
-  margin-bottom: 14px;
-  max-width: 85%;
-}
-
-.msg.bot { align-self: flex-start; }
-.msg.user { align-self: flex-end; flex-direction: row-reverse; }
-
-.msg img {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  margin: 0 8px;
-}
-
-.bubble {
-  padding: 12px 14px;
-  border-radius: 14px;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.bot .bubble {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-}
-
-.user .bubble {
-  background: #dbeafe;
-}
-
-.input-bar {
-  background: white;
-  padding: 12px;
-  display: flex;
-  gap: 8px;
-  box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
-}
-
-.mic-btn {
-  background: #16a34a;
-  color: white;
-  border-radius: 50%;
-  padding: 10px;
-}
-
-.send-btn {
-  background: #2563eb;
-  color: white;
-  padding: 0 18px;
-  border-radius: 8px;
-}
-
-</style>
-</head>
-
-<body>
-
-<div class="chat-container">
-
-  <!-- HEADER -->
-  <div class="header">
-    <img src="https://i.ibb.co/abcd123/doctor.png">
-    <h1 class="text-lg font-semibold text-blue-700">
-      Dr. Bhavna – Homeopathy Consultant
-    </h1>
-  </div>
-
-  <!-- CHAT -->
-  <div id="chatbox" class="chat-area flex flex-col"></div>
-
-  <!-- INPUT -->
-  <div class="input-bar">
-    <input
-      id="messageInput"
-      class="flex-grow border rounded px-3 py-2"
-      placeholder="Apni problem likhiye ya bolein…"
-    >
-    <button id="micButton" class="mic-btn">🎤</button>
-    <button id="sendButton" class="send-btn">Send</button>
-  </div>
-
-</div>
-
-<script>
-const chatbox = document.getElementById("chatbox");
-const input = document.getElementById("messageInput");
-const sendBtn = document.getElementById("sendButton");
-const micBtn = document.getElementById("micButton");
-
-const BOT_IMG = "https://i.ibb.co/abcd123/doctor.png";
-const USER_IMG = "https://i.ibb.co/6r7bK8K/user.png";
-
-let greetingShown = false;
-let receiving = false;
-let websocket;
-const chatId = crypto.randomUUID();
-
-function addMessage(text, type) {
-  const msg = document.createElement("div");
-  msg.className = "msg " + type;
-
-  const avatar = document.createElement("img");
-  avatar.src = type === "bot" ? BOT_IMG : USER_IMG;
-
-  const bubble = document.createElement("div");
-  bubble.className = "bubble";
-  bubble.textContent = text;
-
-  msg.appendChild(avatar);
-  msg.appendChild(bubble);
-  chatbox.appendChild(msg);
-  chatbox.scrollTop = chatbox.scrollHeight;
-
-  return bubble;
-}
-
-function showGreeting() {
-  addMessage(
-    "Just feel free to ask us about your sufferings. Aap apni problem Hindi ya English dono me bata sakte hain.",
-    "bot"
-  );
-}
-
-function connectWS(message) {
-  receiving = true;
-  const botBubble = addMessage("", "bot");
-
-  websocket = new WebSocket("wss://backend.buildpicoapps.com/api/chatbot/chat");
-
-  websocket.onopen = () => {
-    websocket.send(JSON.stringify({
-      chatId,
-      appId: "before-religious",
-      systemPrompt:
-        "You are a knowledgeable homeopath. Reply in simple Hindi or Hinglish.",
-      message
-    }));
-  };
-
-  websocket.onmessage = e => {
-    botBubble.textContent += e.data;
-  };
-
-  websocket.onclose = () => {
-    receiving = false;
-    botBubble.textContent +=
-      "\n\nFor a detailed evaluation of your symptoms and to determine the most appropriate remedy and dosage for your individual case, please consult Dr. Bhavna. Contact number: 9737****77.";
-  };
-}
-
-sendBtn.onclick = () => {
-  if (!input.value.trim() || receiving) return;
-
-  if (!greetingShown) {
-    showGreeting();
-    greetingShown = true;
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dr. Bhavna – Homeopathy Consultant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f3f4f6;
+      }
+      /* Custom scrollbar for chat area */
+      .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+      }
+      .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.39.0",
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react": "https://esm.sh/react@^19.2.4",
+    "react-markdown": "https://esm.sh/react-markdown@^10.1.0"
   }
-
-  const msg = input.value.trim();
-  input.value = "";
-  addMessage(msg, "user");
-  connectWS(msg);
-};
-
-/* 🎤 Hindi + Hinglish Voice */
-const SpeechRecognition =
-  window.SpeechRecognition || window.webkitSpeechRecognition;
-
-if (SpeechRecognition) {
-  const recognition = new SpeechRecognition();
-  recognition.lang = "hi-IN";
-
-  micBtn.onclick = () => recognition.start();
-  recognition.onresult = e => {
-    input.value = e.results[0][0].transcript;
-  };
-} else {
-  micBtn.style.display = "none";
 }
 </script>
-
-</body>
+</head>
+  <body>
+    <div id="root"></div>
+  </body>
 </html>
