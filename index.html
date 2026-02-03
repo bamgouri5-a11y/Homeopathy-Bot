@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dr. Bhavna Homeopathy Chat Bot</title>
+  <title>Homeopathy Doctor Chat Bot</title>
 
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.3/dist/tailwind.min.css" rel="stylesheet"/>
 
@@ -38,26 +38,24 @@
   <div class="bg-white shadow py-3 mb-3">
     <div class="flex justify-center items-center space-x-3">
       <img src="https://i.ibb.co/abcd123/doctor.png" class="w-10 h-10 rounded-full"/>
-      <h1 class="text-lg font-bold text-blue-700">
-        Dr. Bhavna – Homeopathy Chat
-      </h1>
+      <h1 class="text-lg font-bold text-blue-700">Dr. Bhavna – Homeopathy Chat</h1>
     </div>
   </div>
 
-  <!-- CHAT AREA -->
+  <!-- CHAT -->
   <div class="flex-grow container mx-auto px-4">
     <div class="max-w-2xl mx-auto">
       <div id="chatbox" class="flex flex-col overflow-y-auto h-[60vh] p-2"></div>
     </div>
   </div>
 
-  <!-- INPUT BAR -->
+  <!-- INPUT -->
   <div class="sticky bottom-0 bg-white shadow p-3">
     <div class="max-w-2xl mx-auto flex space-x-2">
       <input
         id="messageInput"
         type="text"
-        placeholder="Apni problem likhiye ya bolein…"
+        placeholder="Type or speak your problem..."
         class="flex-grow border rounded px-3 py-2"
       />
 
@@ -72,16 +70,11 @@
     </div>
   </div>
 
-  <!-- FLOATING DOCTOR IMAGE -->
-  <a
-    id="doctorLinkBtn"
-    href="https://bamgouri5-a11y.github.io/Homeopathy-Bot/"
-    target="_blank"
-  >
+  <!-- FLOATING IMAGE -->
+  <a id="doctorLinkBtn" href="https://bamgouri5-a11y.github.io/Homeopathy-Bot/" target="_blank">
     <img src="https://i.ibb.co/abcd123/doctor.png" />
   </a>
 
-  <!-- SCRIPT -->
   <script>
     const chatbox = document.getElementById("chatbox");
     const input = document.getElementById("messageInput");
@@ -104,36 +97,27 @@
 
     function showGreeting() {
       chatbox.appendChild(
-        createMsg(
-          "Just feel free to ask us about your sufferings. Aap apni problem Hindi ya English dono me bata sakte hain.",
-          "left"
-        )
+        createMsg("Just feel free to ask us about your sufferings.", "left")
       );
     }
 
     function connectWS(msg) {
       receiving = true;
-
-      websocket = new WebSocket(
-        "wss://backend.buildpicoapps.com/api/chatbot/chat"
-      );
+      websocket = new WebSocket("wss://backend.buildpicoapps.com/api/chatbot/chat");
 
       const botMsg = createMsg("", "left");
       chatbox.appendChild(botMsg);
 
       websocket.onopen = () => {
-        websocket.send(
-          JSON.stringify({
-            chatId,
-            appId: "before-religious",
-            systemPrompt:
-              "You are a knowledgeable homeopath. Respond in simple Hindi or Hinglish depending on user language.",
-            message: msg
-          })
-        );
+        websocket.send(JSON.stringify({
+          chatId,
+          appId: "before-religious",
+          systemPrompt: "You are a knowledgeable homeopath.",
+          message: msg
+        }));
       };
 
-      websocket.onmessage = (e) => {
+      websocket.onmessage = e => {
         botMsg.textContent += e.data;
         chatbox.scrollTop = chatbox.scrollHeight;
       };
@@ -142,9 +126,41 @@
         receiving = false;
         botMsg.textContent +=
           "\n\nFor a detailed evaluation of your symptoms and to determine the most appropriate remedy and dosage for your individual case, please consult Dr. Bhavna. Contact number: 9737****77.";
-        chatbox.scrollTop = chatbox.scrollHeight;
       };
     }
 
     sendBtn.onclick = () => {
-      if (!input.value.trim() || receiving)
+      if (!input.value.trim() || receiving) return;
+
+      if (!greetingShown) {
+        showGreeting();
+        greetingShown = true;
+      }
+
+      const msg = input.value.trim();
+      input.value = "";
+      chatbox.appendChild(createMsg(msg, "right"));
+      connectWS(msg);
+    };
+
+    /* 🎤 MIC FEATURE */
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.lang = "en-IN";
+
+      micBtn.onclick = () => {
+        recognition.start();
+      };
+
+      recognition.onresult = e => {
+        input.value = e.results[0][0].transcript;
+      };
+    } else {
+      micBtn.style.display = "none";
+    }
+  </script>
+</body>
+</html>
