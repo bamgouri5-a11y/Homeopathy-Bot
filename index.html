@@ -112,4 +112,114 @@
   </div>
 
   <!-- FLOATING DOCTOR IMAGE -->
-  <a id
+  <a id="doctorLinkBtn"
+     href="https://bamgouri5-a11y.github.io/Homeopathy-Bot/"
+     target="_blank">
+    <img src="https://i.ibb.co/abcd123/doctor.png" />
+  </a>
+
+  <!-- SCRIPT -->
+  <script>
+    const chatbox = document.getElementById("chatbox");
+    const input = document.getElementById("messageInput");
+    const sendBtn = document.getElementById("sendButton");
+    const micBtn = document.getElementById("micButton");
+
+    const BOT_IMG = "https://i.ibb.co/abcd123/doctor.png";
+    const USER_IMG = "https://i.ibb.co/6r7bK8K/user.png";
+
+    let websocket;
+    let receiving = false;
+    let greetingShown = false;
+    const chatId = crypto.randomUUID();
+
+    function addMessage(text, side) {
+      const row = document.createElement("div");
+      row.className = `msg-row ${side === "left" ? "msg-left" : "msg-right"}`;
+
+      const avatar = document.createElement("img");
+      avatar.src = side === "left" ? BOT_IMG : USER_IMG;
+      avatar.className = "avatar";
+
+      const bubble = document.createElement("div");
+      bubble.className = `bubble ${side === "left" ? "bot-bubble" : "user-bubble"}`;
+      bubble.textContent = text;
+
+      row.appendChild(avatar);
+      row.appendChild(bubble);
+      chatbox.appendChild(row);
+      chatbox.scrollTop = chatbox.scrollHeight;
+
+      return bubble;
+    }
+
+    function showGreeting() {
+      addMessage(
+        "Just feel free to ask us about your sufferings. Aap apni problem Hindi ya English dono me bata sakte hain.",
+        "left"
+      );
+    }
+
+    function connectWS(msg) {
+      receiving = true;
+
+      websocket = new WebSocket("wss://backend.buildpicoapps.com/api/chatbot/chat");
+
+      const botBubble = addMessage("", "left");
+
+      websocket.onopen = () => {
+        websocket.send(JSON.stringify({
+          chatId,
+          appId: "before-religious",
+          systemPrompt:
+            "You are a knowledgeable homeopath. Reply in simple Hindi or Hinglish.",
+          message: msg
+        }));
+      };
+
+      websocket.onmessage = e => {
+        botBubble.textContent += e.data;
+        chatbox.scrollTop = chatbox.scrollHeight;
+      };
+
+      websocket.onclose = () => {
+        receiving = false;
+        botBubble.textContent +=
+          "\n\nFor a detailed evaluation of your symptoms and to determine the most appropriate remedy and dosage for your individual case, please consult Dr. Bhavna. Contact number: 9737****77.";
+      };
+    }
+
+    sendBtn.onclick = () => {
+      if (!input.value.trim() || receiving) return;
+
+      if (!greetingShown) {
+        showGreeting();
+        greetingShown = true;
+      }
+
+      const msg = input.value.trim();
+      input.value = "";
+      addMessage(msg, "right");
+      connectWS(msg);
+    };
+
+    /* 🎤 Voice Input (Hindi + Hinglish) */
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.lang = "hi-IN";
+      recognition.continuous = false;
+
+      micBtn.onclick = () => recognition.start();
+
+      recognition.onresult = e => {
+        input.value = e.results[0][0].transcript;
+      };
+    } else {
+      micBtn.style.display = "none";
+    }
+  </script>
+</body>
+</html>
