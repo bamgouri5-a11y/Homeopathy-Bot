@@ -3,14 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title> Dr.Bhavna Homeopathy Bot</title>
+  <title>Homeopathy Doctor Chat Bot</title>
 
-  <link
-    href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.3/dist/tailwind.min.css"
-    rel="stylesheet"
-  />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.3/dist/tailwind.min.css" rel="stylesheet"/>
 
-  <!-- Floating Doctor Image CSS -->
   <style>
     #doctorLinkBtn {
       position: fixed;
@@ -20,166 +16,151 @@
     }
 
     #doctorLinkBtn img {
-      width: 75px;
-      height: 75px;
+      width: 70px;
+      height: 70px;
       border-radius: 50%;
-      cursor: pointer;
       box-shadow: 0 6px 16px rgba(0,0,0,0.3);
-      transition: transform 0.3s ease;
     }
 
-    #doctorLinkBtn img:hover {
-      transform: scale(1.1);
+    .mic-btn {
+      background: #16a34a;
+      color: white;
+      padding: 10px;
+      border-radius: 50%;
+      font-size: 18px;
     }
   </style>
 </head>
 
 <body class="bg-blue-100 flex flex-col min-h-screen">
 
-  <!-- TITLE SECTION -->
-  <div class="bg-white shadow-md py-4 mb-4">
-    <div class="container mx-auto flex items-center justify-center space-x-3">
-      <img
-        src="https://i.ibb.co/abcd123/doctor.png"
-        alt="Doctor"
-        class="w-12 h-12 rounded-full"
+  <!-- TITLE -->
+  <div class="bg-white shadow py-3 mb-3">
+    <div class="flex justify-center items-center space-x-3">
+      <img src="https://i.ibb.co/abcd123/doctor.png" class="w-10 h-10 rounded-full"/>
+      <h1 class="text-lg font-bold text-blue-700">Dr. Bhavna – Homeopathy Chat</h1>
+    </div>
+  </div>
+
+  <!-- CHAT -->
+  <div class="flex-grow container mx-auto px-4">
+    <div class="max-w-2xl mx-auto">
+      <div id="chatbox" class="flex flex-col overflow-y-auto h-[60vh] p-2"></div>
+    </div>
+  </div>
+
+  <!-- INPUT -->
+  <div class="sticky bottom-0 bg-white shadow p-3">
+    <div class="max-w-2xl mx-auto flex space-x-2">
+      <input
+        id="messageInput"
+        type="text"
+        placeholder="Type or speak your problem..."
+        class="flex-grow border rounded px-3 py-2"
       />
-      <h1 class="text-xl font-bold text-blue-700">
-        Homeopathy Doctor Chat Bot
-      </h1>
+
+      <button id="micButton" class="mic-btn">🎤</button>
+
+      <button
+        id="sendButton"
+        class="bg-blue-600 text-white px-4 py-2 rounded"
+      >
+        Send
+      </button>
     </div>
   </div>
 
-  <!-- CHAT UI -->
-  <div class="flex-grow container mx-auto py-6 px-4">
-    <div class="h-full w-full max-w-2xl mx-auto">
-      <div id="chatbox" class="flex flex-col items-start overflow-y-auto h-full p-1 rounded"></div>
-    </div>
-  </div>
-
-  <div class="sticky bottom-0 w-full">
-    <div class="flex justify-center">
-      <div class="px-2 w-full max-w-2xl">
-        <div class="flex flex-col my-5">
-          <input
-            class="shadow flex-grow rounded p-2 mb-2 border w-full text-gray-700 focus:outline-none"
-            id="messageInput"
-            type="text"
-            placeholder="Type your message"
-          />
-          <div class="flex justify-between space-x-2">
-            <button
-              class="bg-red-500 hover:bg-red-400 text-white font-bold py-2 px-4 rounded w-full sm:w-auto"
-              id="clearButton"
-            >
-              Clear Chat
-            </button>
-            <button
-              class="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 rounded w-full sm:w-auto"
-              id="sendButton"
-            >
-              Ask Doctor
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- FLOATING DOCTOR IMAGE WITH LINK -->
-  <a
-    id="doctorLinkBtn"
-    href="https://bamgouri5-a11y.github.io/Homeopathy-Bot/"
-    target="_blank"
-  >
-    <img
-      src="https://i.ibb.co/abcd123/doctor.png"
-      alt="Homeopathy Doctor Bot"
-    />
+  <!-- FLOATING IMAGE -->
+  <a id="doctorLinkBtn" href="https://bamgouri5-a11y.github.io/Homeopathy-Bot/" target="_blank">
+    <img src="https://i.ibb.co/abcd123/doctor.png" />
   </a>
 
-  <!-- CHATBOT SCRIPT -->
   <script>
     const chatbox = document.getElementById("chatbox");
-    const messageInput = document.getElementById("messageInput");
-    const sendButton = document.getElementById("sendButton");
-    const clearButton = document.getElementById("clearButton");
-    const chatId = crypto.randomUUID();
-    let websocket = null;
+    const input = document.getElementById("messageInput");
+    const sendBtn = document.getElementById("sendButton");
+    const micBtn = document.getElementById("micButton");
+
+    let websocket;
     let receiving = false;
+    let greetingShown = false;
+    const chatId = crypto.randomUUID();
 
-    const systemPrompt =
-      "You are a knowledgeable homeopath. Suggest homeopathic medicines based on symptoms.";
-
-    function createMessageElement(text, alignment) {
-      const messageElement = document.createElement("div");
-      messageElement.className = `inline-block my-2.5 p-2.5 rounded border ${
-        alignment === "left" ? "self-start bg-white" : "self-end bg-blue-200"
+    function createMsg(text, side) {
+      const d = document.createElement("div");
+      d.className = `my-2 p-2 rounded max-w-[85%] ${
+        side === "left" ? "bg-white self-start" : "bg-blue-200 self-end"
       }`;
-      messageElement.textContent = text;
-      return messageElement;
+      d.textContent = text;
+      return d;
     }
 
-    function connectWebSocket(message, initChat) {
-      receiving = true;
-      sendButton.textContent = "Cancel";
-
-      websocket = new WebSocket(
-        "wss://backend.buildpicoapps.com/api/chatbot/chat"
+    function showGreeting() {
+      chatbox.appendChild(
+        createMsg("Just feel free to ask us about your sufferings.", "left")
       );
+    }
 
-      websocket.addEventListener("open", () => {
-        websocket.send(
-          JSON.stringify({
-            chatId,
-            appId: "before-religious",
-            systemPrompt,
-            message: initChat
-              ? "Hello, I am your Homeopathy Doctor Bot. How can I help you?"
-              : message,
-          })
-        );
-      });
+    function connectWS(msg) {
+      receiving = true;
+      websocket = new WebSocket("wss://backend.buildpicoapps.com/api/chatbot/chat");
 
-      const messageElement = createMessageElement("", "left");
-      chatbox.appendChild(messageElement);
+      const botMsg = createMsg("", "left");
+      chatbox.appendChild(botMsg);
 
-      websocket.onmessage = (event) => {
-        messageElement.textContent += event.data;
+      websocket.onopen = () => {
+        websocket.send(JSON.stringify({
+          chatId,
+          appId: "before-religious",
+          systemPrompt: "You are a knowledgeable homeopath.",
+          message: msg
+        }));
+      };
+
+      websocket.onmessage = e => {
+        botMsg.textContent += e.data;
         chatbox.scrollTop = chatbox.scrollHeight;
       };
 
       websocket.onclose = () => {
         receiving = false;
-        sendButton.textContent = "Ask Doctor";
-
-        messageElement.textContent +=
-          "\n\nFor a detailed evaluation of your symptoms and to determine the most appropriate remedy and dosage for your individual case, please consult Dr. Bhavna. Contact number: 973772177.";
-
-        chatbox.scrollTop = chatbox.scrollHeight;
+        botMsg.textContent +=
+          "\n\nFor a detailed evaluation of your symptoms and to determine the most appropriate remedy and dosage for your individual case, please consult Dr. Bhavna. Contact number: 9737****77.";
       };
     }
 
-    sendButton.addEventListener("click", () => {
-      if (!receiving && messageInput.value.trim() !== "") {
-        const msg = messageInput.value.trim();
-        messageInput.value = "";
-        chatbox.appendChild(createMessageElement(msg, "right"));
-        connectWebSocket(msg, false);
-      } else if (receiving && websocket) {
-        websocket.close();
+    sendBtn.onclick = () => {
+      if (!input.value.trim() || receiving) return;
+
+      if (!greetingShown) {
+        showGreeting();
+        greetingShown = true;
       }
-    });
 
-    messageInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") sendButton.click();
-    });
+      const msg = input.value.trim();
+      input.value = "";
+      chatbox.appendChild(createMsg(msg, "right"));
+      connectWS(msg);
+    };
 
-    clearButton.addEventListener("click", () => {
-      chatbox.innerHTML = "";
-    });
+    /* 🎤 MIC FEATURE */
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
 
-    connectWebSocket("", true);
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.lang = "en-IN";
+
+      micBtn.onclick = () => {
+        recognition.start();
+      };
+
+      recognition.onresult = e => {
+        input.value = e.results[0][0].transcript;
+      };
+    } else {
+      micBtn.style.display = "none";
+    }
   </script>
 </body>
 </html>
