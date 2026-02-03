@@ -3,30 +3,50 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Homeopathy Doctor Chat Bot</title>
+  <title>Dr. Bhavna – Homeopathy Chat Bot</title>
 
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.3/dist/tailwind.min.css" rel="stylesheet"/>
 
   <style>
     body { background:#eef4fb; }
 
-    #doctorLinkBtn {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      z-index: 9999;
+    :root {
+      --brand: #2563eb;
     }
 
-    #doctorLinkBtn img {
-      width: 70px;
-      height: 70px;
+    .header {
+      background: white;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .header img {
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+    }
+
+    .chat-container {
+      max-width: 820px;
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 120px);
+    }
+
+    .chat-area {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
     }
 
     .msg {
       display: flex;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
       max-width: 85%;
     }
 
@@ -41,7 +61,7 @@
     }
 
     .bubble {
-      padding: 12px;
+      padding: 12px 14px;
       border-radius: 14px;
       font-size: 14px;
       line-height: 1.5;
@@ -56,6 +76,14 @@
       background: #dbeafe;
     }
 
+    .input-bar {
+      background: white;
+      padding: 12px;
+      display: flex;
+      gap: 8px;
+      box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+    }
+
     .mic-btn {
       background: #16a34a;
       color: white;
@@ -63,174 +91,189 @@
       padding: 10px;
       font-size: 18px;
     }
+
+    .send-btn {
+      background: var(--brand);
+      color: white;
+      padding: 0 18px;
+      border-radius: 8px;
+    }
+
+    #doctorLinkBtn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 9999;
+    }
+
+    #doctorLinkBtn img {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+    }
   </style>
 </head>
 
-<body class="flex flex-col min-h-screen">
+<body>
 
-  <!-- HEADER -->
-  <div class="bg-white shadow py-4">
-    <div class="flex justify-center items-center space-x-3">
-      <img src="https://i.ibb.co/abcd123/doctor.png" class="w-12 h-12 rounded-full" />
-      <h1 class="text-xl font-bold text-blue-700">
-        Dr. Bhavna – Homeopathy Chat Bot
-      </h1>
+  <!-- HEADER WITH DOCTOR LOGO -->
+  <div class="header">
+    <img src="DOCTOR_LOGO_URL_HERE" alt="Doctor Logo">
+    <div>
+      <div class="text-lg font-bold text-blue-700">
+        Dr. Bhavna Homeopathy
+      </div>
+      <div class="text-sm text-gray-500">
+        Online Medical Assistant
+      </div>
     </div>
   </div>
 
-  <!-- CHAT AREA -->
-  <div class="flex-grow container mx-auto px-4 py-4">
-    <div class="max-w-2xl mx-auto">
-      <div id="chatbox" class="flex flex-col overflow-y-auto h-[60vh]"></div>
-    </div>
-  </div>
+  <!-- CHAT -->
+  <div class="chat-container">
+    <div id="chatbox" class="chat-area flex flex-col"></div>
 
-  <!-- INPUT BAR -->
-  <div class="bg-white shadow p-3 sticky bottom-0">
-    <div class="max-w-2xl mx-auto flex space-x-2">
+    <!-- INPUT -->
+    <div class="input-bar">
       <input
         id="messageInput"
         class="flex-grow border rounded px-3 py-2"
         placeholder="Apni problem likhiye ya bolein…"
-      />
-      <button id="micButton" class="mic-btn">🎤</button>
-      <button
-        id="sendButton"
-        class="bg-blue-600 text-white px-4 py-2 rounded"
       >
-        Send
-      </button>
+      <button id="micButton" class="mic-btn">🎤</button>
+      <button id="sendButton" class="send-btn">Send</button>
     </div>
   </div>
 
-  <!-- CONTACT US -->
+  <!-- CONTACT INFO -->
   <div class="bg-white py-3 text-center text-sm text-gray-700">
-    📧 Contact Us:
+    📧
     <a href="mailto:drbhavnabamania@gmail.com" class="text-blue-600 font-semibold">
       drbhavnabamania@gmail.com
     </a>
     &nbsp; | &nbsp;
-    📞 Phone: <strong>9737****77</strong>
+    📞 <strong>9737****77</strong>
   </div>
 
-  <!-- FLOATING DOCTOR IMAGE -->
+  <!-- FLOATING DOCTOR LOGO -->
   <a
     id="doctorLinkBtn"
     href="https://bamgouri5-a11y.github.io/Homeopathy-Bot/"
     target="_blank"
   >
-    <img src="https://i.ibb.co/abcd123/doctor.png" />
+    <img src="DOCTOR_LOGO_URL_HERE" alt="Doctor Bot">
   </a>
 
-  <!-- SCRIPT -->
-  <script>
-    const chatbox = document.getElementById("chatbox");
-    const input = document.getElementById("messageInput");
-    const sendBtn = document.getElementById("sendButton");
-    const micBtn = document.getElementById("micButton");
+<script>
+const chatbox = document.getElementById("chatbox");
+const input = document.getElementById("messageInput");
+const sendBtn = document.getElementById("sendButton");
+const micBtn = document.getElementById("micButton");
 
-    const BOT_IMG = "https://i.ibb.co/abcd123/doctor.png";
-    const USER_IMG = "https://i.ibb.co/6r7bK8K/user.png";
+const BOT_IMG = "DOCTOR_LOGO_URL_HERE";
+const USER_IMG = "https://i.ibb.co/6r7bK8K/user.png";
 
-    let websocket;
-    let receiving = false;
-    let greetingShown = false;
-    const chatId = crypto.randomUUID();
+let websocket;
+let receiving = false;
+let greetingShown = false;
+const chatId = crypto.randomUUID();
 
-    function addMessage(text, type) {
-      const msg = document.createElement("div");
-      msg.className = "msg " + type;
+function addMessage(text, type) {
+  const msg = document.createElement("div");
+  msg.className = "msg " + type;
 
-      const avatar = document.createElement("img");
-      avatar.src = type === "bot" ? BOT_IMG : USER_IMG;
+  const avatar = document.createElement("img");
+  avatar.src = type === "bot" ? BOT_IMG : USER_IMG;
 
-      const bubble = document.createElement("div");
-      bubble.className = "bubble";
-      bubble.textContent = text;
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+  bubble.textContent = text;
 
-      msg.appendChild(avatar);
-      msg.appendChild(bubble);
-      chatbox.appendChild(msg);
-      chatbox.scrollTop = chatbox.scrollHeight;
+  msg.appendChild(avatar);
+  msg.appendChild(bubble);
+  chatbox.appendChild(msg);
+  chatbox.scrollTop = chatbox.scrollHeight;
 
-      return bubble;
-    }
+  return bubble;
+}
 
-    function speakDoctor(text) {
-      if (!window.speechSynthesis) return;
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = /[अ-ह]/.test(text) ? "hi-IN" : "en-IN";
-      u.rate = 0.95;
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(u);
-    }
+function speakDoctor(text) {
+  if (!window.speechSynthesis) return;
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = /[अ-ह]/.test(text) ? "hi-IN" : "en-IN";
+  u.rate = 0.95;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(u);
+}
 
-    function showGreeting() {
-      const text =
-        "Just feel free to ask us about your sufferings. Aap apni problem Hindi ya English dono me bata sakte hain.";
-      addMessage(text, "bot");
-      speakDoctor(text);
-    }
+function showGreeting() {
+  const text =
+    "Just feel free to ask us about your sufferings. Aap apni problem Hindi ya English dono me bata sakte hain.";
+  addMessage(text, "bot");
+  speakDoctor(text);
+}
 
-    function connectWS(message) {
-      receiving = true;
-      let finalText = "";
-      const botBubble = addMessage("", "bot");
+function connectWS(message) {
+  receiving = true;
+  let finalText = "";
+  const botBubble = addMessage("", "bot");
 
-      websocket = new WebSocket("wss://backend.buildpicoapps.com/api/chatbot/chat");
+  websocket = new WebSocket("wss://backend.buildpicoapps.com/api/chatbot/chat");
 
-      websocket.onopen = () => {
-        websocket.send(JSON.stringify({
-          chatId,
-          appId: "before-religious",
-          systemPrompt:
-            "You are a knowledgeable homeopath. Reply in simple Hindi or Hinglish.",
-          message
-        }));
-      };
+  websocket.onopen = () => {
+    websocket.send(JSON.stringify({
+      chatId,
+      appId: "before-religious",
+      systemPrompt:
+        "You are a knowledgeable homeopath. Reply in simple Hindi or Hinglish.",
+      message
+    }));
+  };
 
-      websocket.onmessage = e => {
-        finalText += e.data;
-        botBubble.textContent = finalText;
-      };
+  websocket.onmessage = e => {
+    finalText += e.data;
+    botBubble.textContent = finalText;
+  };
 
-      websocket.onclose = () => {
-        receiving = false;
-        finalText +=
-          "\n\nFor a detailed evaluation of your symptoms and to determine the most appropriate remedy and dosage for your individual case, please consult Dr. Bhavna. Email: drbhavnabamania@gmail.com | Phone: 9737****77.";
-        botBubble.textContent = finalText;
-        speakDoctor(finalText);
-      };
-    }
+  websocket.onclose = () => {
+    receiving = false;
+    finalText +=
+      "\n\nFor a detailed evaluation of your symptoms and to determine the most appropriate remedy and dosage for your individual case, please consult Dr. Bhavna. Email: drbhavnabamania@gmail.com | Phone: 9737****77.";
+    botBubble.textContent = finalText;
+    speakDoctor(finalText);
+  };
+}
 
-    sendBtn.onclick = () => {
-      if (!input.value.trim() || receiving) return;
+sendBtn.onclick = () => {
+  if (!input.value.trim() || receiving) return;
 
-      if (!greetingShown) {
-        showGreeting();
-        greetingShown = true;
-      }
+  if (!greetingShown) {
+    showGreeting();
+    greetingShown = true;
+  }
 
-      const msg = input.value.trim();
-      input.value = "";
-      addMessage(msg, "user");
-      connectWS(msg);
-    };
+  const msg = input.value.trim();
+  input.value = "";
+  addMessage(msg, "user");
+  connectWS(msg);
+};
 
-    // 🎤 Voice input (Hindi + Hinglish)
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
+/* 🎤 Voice input (Hindi + Hinglish) */
+const SpeechRecognition =
+  window.SpeechRecognition || window.webkitSpeechRecognition;
 
-    if (SpeechRecognition) {
-      const recognition = new SpeechRecognition();
-      recognition.lang = "hi-IN";
-      micBtn.onclick = () => recognition.start();
-      recognition.onresult = e => {
-        input.value = e.results[0][0].transcript;
-      };
-    } else {
-      micBtn.style.display = "none";
-    }
-  </script>
+if (SpeechRecognition) {
+  const recognition = new SpeechRecognition();
+  recognition.lang = "hi-IN";
+  micBtn.onclick = () => recognition.start();
+  recognition.onresult = e => {
+    input.value = e.results[0][0].transcript;
+  };
+} else {
+  micBtn.style.display = "none";
+}
+</script>
+
 </body>
 </html>
