@@ -10,7 +10,7 @@
     rel="stylesheet"
   />
 
-  <!-- Doctor Floating Image CSS -->
+  <!-- Floating Doctor Image CSS -->
   <style>
     #doctorLinkBtn {
       position: fixed;
@@ -35,6 +35,20 @@
 </head>
 
 <body class="bg-blue-100 flex flex-col min-h-screen">
+
+  <!-- TITLE SECTION -->
+  <div class="bg-white shadow-md py-4 mb-4">
+    <div class="container mx-auto flex items-center justify-center space-x-3">
+      <img
+        src="https://i.ibb.co/abcd123/doctor.png"
+        alt="Doctor"
+        class="w-12 h-12 rounded-full"
+      />
+      <h1 class="text-xl font-bold text-blue-700">
+        Homeopathy Doctor Chat Bot
+      </h1>
+    </div>
+  </div>
 
   <!-- CHAT UI -->
   <div class="flex-grow container mx-auto py-6 px-4">
@@ -79,7 +93,7 @@
     target="_blank"
   >
     <img
-      src="https://i.ibb.co/3p9K1cZ/doctor-bot.png"
+      src="https://i.ibb.co/abcd123/doctor.png"
       alt="Homeopathy Doctor Bot"
     />
   </a>
@@ -138,6 +152,11 @@
       websocket.onclose = () => {
         receiving = false;
         sendButton.textContent = "Ask Doctor";
+
+        messageElement.textContent +=
+          "\n\nFor a detailed evaluation of your symptoms and to determine the most appropriate remedy and dosage for your individual case, please consult Dr. Bhavna. Contact number: 973772177.";
+
+        chatbox.scrollTop = chatbox.scrollHeight;
       };
     }
 
