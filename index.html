@@ -3,25 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Homeopathy Doctor Chat Bot</title>
+  <title>Dr. Bhavna – Homeopathy Chat Bot</title>
 
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.3/dist/tailwind.min.css" rel="stylesheet"/>
 
   <style>
     body { background:#eef4fb; }
 
-    #doctorLinkBtn {
+    #floatBtn {
       position: fixed;
       bottom: 20px;
       right: 20px;
       z-index: 9999;
     }
 
-    #doctorLinkBtn img {
-      width: 90px;
-      height: 90px;
-      border-radius: 50%;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+    #floatBtn img {
+      width: 120px;
       cursor: pointer;
     }
 
@@ -40,12 +37,18 @@
   <!-- HEADER -->
   <div class="bg-white shadow py-3 mb-3">
     <div class="flex justify-center items-center space-x-3">
-      <img src="PASTE_IMAGE_URL_HERE" class="w-10 h-10 rounded-full" alt="Doctor Logo"/>
-      <h1 class="text-lg font-bold text-blue-700">Dr. Bhavna – Homeopathy Chat</h1>
+      <img
+        src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAYGBgYHBgcICAcKCwoLCg8ODAwODxYQERAREBYiFRkVFRkVIh4kHhweJB42KiYmKjY+NDI0PkxERExfWl98fKcBBgYGBgcGBwgIBwoLCgsKDw4MDA4PFhAREBEQFiIVGRUVGRUiHiQeHB4kHjYqJiYqNj40MjQ+TERETF9a..."
+        class="w-12 h-12 rounded-full"
+        alt="Homeopathy Bot Logo"
+      />
+      <h1 class="text-lg font-bold text-blue-700">
+        Dr. Bhavna – Homeopathy Chat
+      </h1>
     </div>
   </div>
 
-  <!-- CHAT AREA -->
+  <!-- CHAT -->
   <div class="flex-grow container mx-auto px-4">
     <div class="max-w-2xl mx-auto">
       <div id="chatbox" class="flex flex-col overflow-y-auto h-[60vh] p-2"></div>
@@ -58,12 +61,10 @@
       <input
         id="messageInput"
         type="text"
-        placeholder="Type or speak your problem..."
+        placeholder="Type or speak your problem…"
         class="flex-grow border rounded px-3 py-2"
       />
-
       <button id="micButton" class="mic-btn">🎤</button>
-
       <button
         id="sendButton"
         class="bg-blue-600 text-white px-4 py-2 rounded"
@@ -73,26 +74,33 @@
     </div>
   </div>
 
-  <!-- CONTACT + DISCLAIMER -->
+  <!-- FOOTER CONTACT + DISCLAIMER -->
   <footer class="bg-white border-t mt-4 p-4 text-sm text-gray-700">
     <div class="text-center mb-2">
-      📧 Contact Email:
+      📧 Contact:
       <a href="mailto:drbhavnabamania@gmail.com" class="text-blue-600 font-semibold">
         drbhavnabamania@gmail.com
       </a>
-      &nbsp; | &nbsp;
-      📞 Phone: <strong>9737****77</strong>
     </div>
 
     <div class="text-center text-xs text-gray-600 max-w-3xl mx-auto">
       <strong>Disclaimer:</strong>
-      This chatbot is intended for informational purposes only and does not replace professional medical advice, diagnosis, or treatment. Always consult a qualified homeopathic doctor or healthcare professional for a detailed evaluation of your symptoms and appropriate treatment.
+      This chatbot is intended for informational purposes only and does not replace
+      professional medical advice, diagnosis, or treatment.
+      Always consult a qualified homeopathic doctor for proper evaluation and dosage.
     </div>
   </footer>
 
-  <!-- FLOATING CLICKABLE BOT IMAGE -->
-  <a id="doctorLinkBtn" href="https://bamgouri5-a11y.github.io/Homeopathy-Bot/" target="_blank">
-    <img src="PASTE_IMAGE_URL_HERE" alt="Homeopathy Doctor Chatbot" />
+  <!-- FLOATING BOT IMAGE -->
+  <a
+    id="floatBtn"
+    href="https://bamgouri5-a11y.github.io/Homeopathy-Bot/"
+    target="_blank"
+  >
+    <img
+      src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAYGBgYHBgcICAcKCwoLCg8ODAwODxYQERAREBYiFRkVFRkVIh4kHhweJB42KiYmKjY+NDI0PkxERExfWl98fKcBBgYGBgcGBwgIBwoLCgsKDw4MDA4PFhAREBEQFiIVGRUVGRUiHiQeHB4kHjYqJiYqNj40MjQ+TERETF9a..."
+      alt="Homeopathy Doctor Chatbot"
+    />
   </a>
 
   <!-- SCRIPT -->
@@ -118,7 +126,18 @@
 
     function showGreeting() {
       chatbox.appendChild(
-        createMsg("Just feel free to ask us about your sufferings.", "left")
+        createMsg(
+`Hello! Namaste. Main Dr. Bhavna hoon.
+
+Batayein, aap kaise hain aur aaj main aapki kaise madad kar sakti hoon?
+I am here to assist you with your health concerns using homeopathic principles.
+
+Note: I am an AI assistant representing Dr. Bhavna's expertise to guide you.
+
+For a detailed evaluation and precise dosage, please consult Dr. Bhavna physically.
+Email: drbhavnabamania@gmail.com`,
+          "left"
+        )
       );
     }
 
@@ -145,8 +164,6 @@
 
       websocket.onclose = () => {
         receiving = false;
-        botMsg.textContent +=
-          "\n\nFor a detailed evaluation of your symptoms and to determine the most appropriate remedy and dosage for your individual case, please consult Dr. Bhavna. Contact email: drbhavnabamania@gmail.com | Phone: 9737****77.";
       };
     }
 
@@ -164,7 +181,7 @@
       connectWS(msg);
     };
 
-    /* 🎤 MIC FEATURE */
+    /* 🎤 MIC INPUT */
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -172,10 +189,7 @@
       const recognition = new SpeechRecognition();
       recognition.lang = "en-IN";
 
-      micBtn.onclick = () => {
-        recognition.start();
-      };
-
+      micBtn.onclick = () => recognition.start();
       recognition.onresult = e => {
         input.value = e.results[0][0].transcript;
       };
