@@ -77,3 +77,184 @@ body { background:#eef4fb; }
 .action-btn {
   padding:8px 14px;
   border-radius:8px;
+  font-weight:600;
+}
+
+.mic-btn {
+  background:#16a34a;
+  color:#fff;
+  padding:10px;
+  border-radius:50%;
+  font-size:18px;
+}
+
+/* MODAL */
+.modal {
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.4);
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+}
+.modal-content {
+  background:#fff;
+  width:90%;
+  max-width:420px;
+  padding:20px;
+  border-radius:12px;
+}
+</style>
+</head>
+
+<body class="flex flex-col min-h-screen">
+
+<!-- HEADER -->
+<div class="header">
+  <img src="bot.png" alt="Bot Logo">
+  <div>
+    <div class="text-lg font-bold text-blue-700">
+      Dr. Bhavna – Homeopathy Chat
+    </div>
+    <div class="text-xs text-gray-500">
+      AI Assisted Homeopathy Support
+    </div>
+  </div>
+</div>
+
+<!-- CHAT -->
+<div class="flex-grow container mx-auto px-4">
+  <div id="chatbox" class="max-w-2xl mx-auto flex flex-col chat-area"></div>
+</div>
+
+<!-- INPUT + ACTIONS -->
+<div class="bg-white shadow p-3 sticky bottom-0">
+  <div class="max-w-2xl mx-auto flex flex-col space-y-2">
+
+    <input id="messageInput" class="border rounded px-3 py-2 w-full"
+      placeholder="Type or speak your problem…" />
+
+    <div class="flex justify-between items-center">
+      <div class="flex space-x-2">
+        <button id="askBtn" class="bg-blue-600 text-white action-btn">
+          Ask Dr
+        </button>
+
+        <button id="clearBtn" class="bg-red-500 text-white action-btn">
+          Clear Chat
+        </button>
+
+        <!-- UPDATED WHATSAPP NUMBER -->
+        <a
+          href="https://wa.me/919300119509"
+          target="_blank"
+          class="bg-green-600 text-white action-btn"
+        >
+          Book Appointment
+        </a>
+      </div>
+
+      <button id="micButton" class="mic-btn">🎤</button>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="bg-white border-t p-4 text-center text-xs text-gray-600">
+  📧 Contact:
+  <a href="mailto:drbhavnabamania@gmail.com" class="text-blue-600 font-semibold">
+    drbhavnabamania@gmail.com
+  </a>
+  <br><br>
+  <strong>Disclaimer:</strong>
+  This chatbot provides general homeopathic guidance for informational purposes only.
+  It does not replace professional medical consultation.
+  Please consult Dr. Bhavna physically for diagnosis and dosage.
+</footer>
+
+<!-- SCRIPT -->
+<script>
+const chatbox = document.getElementById("chatbox");
+const input = document.getElementById("messageInput");
+const askBtn = document.getElementById("askBtn");
+const clearBtn = document.getElementById("clearBtn");
+const micBtn = document.getElementById("micButton");
+
+let history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
+let greetingShown = false;
+
+/* LOAD SAVED HISTORY */
+history.forEach(m => addMessage(m.text, m.type));
+
+function addMessage(text, type) {
+  const row = document.createElement("div");
+  row.className = `msg-row ${type}-row`;
+
+  const avatar = document.createElement("div");
+  avatar.className = `avatar ${type}-avatar`;
+  avatar.textContent = type === "bot" ? "Dr" : "You";
+
+  const bubble = document.createElement("div");
+  bubble.className = `bubble ${type}-bubble`;
+  bubble.textContent = text;
+
+  row.appendChild(avatar);
+  row.appendChild(bubble);
+  chatbox.appendChild(row);
+  chatbox.scrollTop = chatbox.scrollHeight;
+
+  history.push({ text, type });
+  localStorage.setItem("chatHistory", JSON.stringify(history));
+}
+
+function showGreeting() {
+  addMessage(
+`Hello! Namaste. Main Dr. Bhavna hoon.
+
+Batayein, aap kaise hain aur aaj main aapki kaise madad kar sakti hoon?
+
+Note: I am an AI assistant representing Dr. Bhavna's expertise.`,
+    "bot"
+  );
+}
+
+askBtn.onclick = () => {
+  if (!input.value.trim()) return;
+
+  if (!greetingShown) {
+    showGreeting();
+    greetingShown = true;
+  }
+
+  const msg = input.value;
+  input.value = "";
+  addMessage(msg, "user");
+
+  addMessage(
+    "Thank you for sharing. I will guide you based on homeopathic principles.",
+    "bot"
+  );
+};
+
+clearBtn.onclick = () => {
+  chatbox.innerHTML = "";
+  localStorage.removeItem("chatHistory");
+  history = [];
+  greetingShown = false;
+};
+
+/* MIC INPUT */
+const SpeechRecognition =
+  window.SpeechRecognition || window.webkitSpeechRecognition;
+
+if (SpeechRecognition) {
+  const rec = new SpeechRecognition();
+  rec.lang = "en-IN";
+  micBtn.onclick = () => rec.start();
+  rec.onresult = e => input.value = e.results[0][0].transcript;
+}
+</script>
+
+</body>
+</html>
