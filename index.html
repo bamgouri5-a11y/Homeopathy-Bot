@@ -1,260 +1,405 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dr. Bhavna – Homeopathy Chat</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Dr. Bhavna – Homeopathy Chat (Responsive with Remedies)</title>
 
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.3/dist/tailwind.min.css" rel="stylesheet"/>
 
 <style>
-body { background:#eef4fb; }
+  :root{
+    --brand:#2563eb;
+    --muted:#6b7280;
+    --bg:#eef4fb;
+  }
+  body{ background:var(--bg); font-family:Inter,ui-sans-serif,system-ui,"Segoe UI",Roboto,"Helvetica Neue",Arial; }
 
-.header {
-  background:#fff;
-  padding:14px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:12px;
-  box-shadow:0 2px 8px rgba(0,0,0,.1);
-}
+  .container-md{ max-width:920px; margin:0 auto; padding:0 16px; }
 
-.header img {
-  width:48px;
-  height:48px;
-  border-radius:50%;
-  object-fit:contain;
-}
+  .header{
+    background:#fff; display:flex; gap:12px; align-items:center; justify-content:center;
+    padding:14px; box-shadow:0 2px 10px rgba(0,0,0,0.06);
+  }
+  .header img{ width:48px; height:48px; object-fit:cover; border-radius:10px; }
 
-.chat-area {
-  height:60vh;
-  overflow-y:auto;
-  padding:14px;
-}
+  .chat-area{
+    background:transparent;
+    padding:16px 0;
+    height:62vh;
+    overflow-y:auto;
+  }
 
-.msg-row {
-  display:flex;
-  align-items:flex-end;
-  margin-bottom:10px;
-  max-width:85%;
-}
+  .msg-row{ display:flex; gap:8px; margin:10px 0; max-width:85%; }
+  .bot-row{ align-self:flex-start; }
+  .user-row{ align-self:flex-end; flex-direction:row-reverse; }
 
-.bot-row { align-self:flex-start; }
-.user-row { align-self:flex-end; flex-direction:row-reverse; }
+  .avatar{
+    width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    color:#fff; font-weight:700; flex-shrink:0;
+  }
+  .bot-avatar{ background:#16a34a; }
+  .user-avatar{ background:var(--brand); }
 
-.avatar {
-  width:34px;
-  height:34px;
-  border-radius:50%;
-  margin:0 8px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:bold;
-  color:#fff;
-}
+  .bubble{
+    padding:12px 14px; border-radius:12px; font-size:14px; line-height:1.45; word-break:break-word;
+    box-shadow:0 1px 0 rgba(0,0,0,0.02);
+  }
+  .bot-bubble{ background:#fff; border:1px solid #e6edf7; }
+  .user-bubble{ background:#dbeafe; }
 
-.bot-avatar { background:#22c55e; }
-.user-avatar { background:#2563eb; }
+  /* Remedy card inside bubble */
+  .remedy-card{ border-left:4px solid var(--brand); padding:8px 10px; margin:6px 0; border-radius:8px; background:#fff7ed; }
+  .remedy-title{ font-weight:700; margin-bottom:6px; color:#1f2937; }
+  .remedy-meta{ font-size:13px; color:var(--muted); margin-bottom:6px; }
+  .remedy-note{ font-size:13px; color:#374151; }
 
-.bubble {
-  padding:10px 12px;
-  border-radius:12px;
-  font-size:14px;
-  line-height:1.5;
-}
+  /* Input area */
+  .input-bar{ background:#fff; padding:12px; box-shadow:0 -2px 10px rgba(0,0,0,0.04); position:sticky; bottom:0; }
+  .action-btn{ padding:8px 12px; border-radius:8px; font-weight:600; }
+  .mic-btn{ background:#16a34a; color:#fff; padding:10px; border-radius:50%; font-size:16px; }
 
-.bot-bubble {
-  background:#fff;
-  border:1px solid #e5e7eb;
-}
+  /* footer */
+  footer{ background:#fff; padding:14px; text-align:center; font-size:13px; color:var(--muted); border-top:1px solid #eef2ff; }
 
-.user-bubble {
-  background:#dbeafe;
-}
-
-.action-btn {
-  padding:8px 14px;
-  border-radius:8px;
-  font-weight:600;
-}
-
-.mic-btn {
-  background:#16a34a;
-  color:#fff;
-  padding:10px;
-  border-radius:50%;
-  font-size:18px;
-}
-
-/* MODAL */
-.modal {
-  display:none;
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.4);
-  align-items:center;
-  justify-content:center;
-  z-index:9999;
-}
-.modal-content {
-  background:#fff;
-  width:90%;
-  max-width:420px;
-  padding:20px;
-  border-radius:12px;
-}
+  /* responsive tweaks */
+  @media (max-width:640px){
+    .chat-area{ height:58vh; padding:10px 0; }
+    .header{ padding:10px; }
+  }
 </style>
 </head>
+<body>
 
-<body class="flex flex-col min-h-screen">
-
-<!-- HEADER -->
-<div class="header">
-  <img src="bot.png" alt="Bot Logo">
-  <div>
-    <div class="text-lg font-bold text-blue-700">
-      Dr. Bhavna – Homeopathy Chat
+  <!-- HEADER -->
+  <header class="header container-md">
+    <!-- bot.png should be present in same directory -->
+    <img src="bot.png" alt="Dr Bhavna Logo" />
+    <div>
+      <div style="font-weight:700; color:var(--brand);">Dr. Bhavna – Homeopathy Chat</div>
+      <div style="font-size:13px; color:var(--muted);">AI-assisted homeopathy guidance</div>
     </div>
-    <div class="text-xs text-gray-500">
-      AI Assisted Homeopathy Support
-    </div>
-  </div>
-</div>
+  </header>
 
-<!-- CHAT -->
-<div class="flex-grow container mx-auto px-4">
-  <div id="chatbox" class="max-w-2xl mx-auto flex flex-col chat-area"></div>
-</div>
+  <!-- MAIN -->
+  <main class="container-md" style="padding-top:8px;">
+    <!-- Chat area -->
+    <div id="chatArea" class="chat-area max-w-3xl mx-auto" role="log" aria-live="polite"></div>
+  </main>
 
-<!-- INPUT + ACTIONS -->
-<div class="bg-white shadow p-3 sticky bottom-0">
-  <div class="max-w-2xl mx-auto flex flex-col space-y-2">
-
-    <input id="messageInput" class="border rounded px-3 py-2 w-full"
-      placeholder="Type or speak your problem…" />
-
-    <div class="flex justify-between items-center">
-      <div class="flex space-x-2">
-        <button id="askBtn" class="bg-blue-600 text-white action-btn">
-          Ask Dr
-        </button>
-
-        <button id="clearBtn" class="bg-red-500 text-white action-btn">
-          Clear Chat
-        </button>
-
-        <!-- UPDATED WHATSAPP NUMBER -->
-        <a
-          href="https://wa.me/919300119509"
-          target="_blank"
-          class="bg-green-600 text-white action-btn"
-        >
-          Book Appointment
-        </a>
+  <!-- Input / Actions -->
+  <div class="container-md input-bar">
+    <div class="max-w-3xl mx-auto flex flex-col gap-2">
+      <input id="messageInput" type="text" placeholder="Type or speak your problem (e.g. headache, cold, back pain)..." class="border rounded px-3 py-2 w-full" />
+      <div class="flex items-center justify-between">
+        <div class="flex gap-2">
+          <button id="askBtn" class="bg-blue-600 text-white action-btn">Ask Dr</button>
+          <button id="clearBtn" class="bg-red-500 text-white action-btn">Clear Chat</button>
+          <a id="bookLink" href="https://wa.me/919300119509" target="_blank" class="bg-green-600 text-white action-btn">Book Appointment</a>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="micBtn" class="mic-btn" title="Speak">🎤</button>
+        </div>
       </div>
-
-      <button id="micButton" class="mic-btn">🎤</button>
     </div>
   </div>
-</div>
 
-<!-- FOOTER -->
-<footer class="bg-white border-t p-4 text-center text-xs text-gray-600">
-  📧 Contact:
-  <a href="mailto:drbhavnabamania@gmail.com" class="text-blue-600 font-semibold">
-    drbhavnabamania@gmail.com
-  </a>
-  <br><br>
-  <strong>Disclaimer:</strong>
-  This chatbot provides general homeopathic guidance for informational purposes only.
-  It does not replace professional medical consultation.
-  Please consult Dr. Bhavna physically for diagnosis and dosage.
-</footer>
+  <!-- Footer -->
+  <footer class="mt-4">
+    <div>📧 <a href="mailto:drbhavnabamania@gmail.com" style="color:var(--brand); font-weight:600;">drbhavnabamania@gmail.com</a> &nbsp; | &nbsp; 📞 9737****77</div>
+    <div style="margin-top:8px; max-width:720px; margin-left:auto; margin-right:auto; color:#6b7280;">
+      <strong>Disclaimer:</strong> This chatbot provides informational guidance only and does not replace professional medical advice. For a detailed evaluation and dosage, please consult Dr. Bhavna physically.
+    </div>
+  </footer>
 
-<!-- SCRIPT -->
 <script>
-const chatbox = document.getElementById("chatbox");
-const input = document.getElementById("messageInput");
+/* -------------------------
+  Local homeopathy DB (sample)
+  Add or edit entries as needed.
+---------------------------- */
+const remediesDB = [
+  {
+    name: "Arnica montana",
+    keywords: ["bruise","trauma","injury","fall","sore","after injury"],
+    symptoms: "Pain and soreness after trauma, bruises, stiffness.",
+    potency: "30C, 200C",
+    dosage: "One dose every 4-6 hours for 24 hours or as directed.",
+    notes: "Good for blunt injuries, post-surgical soreness."
+  },
+  {
+    name: "Nux vomica",
+    keywords: ["constipation","hangover","nausea","indigestion","irritable","overwork"],
+    symptoms: "Nausea, constipation, irritability after overindulgence.",
+    potency: "30C",
+    dosage: "2-3 pellets once, repeat if necessary after several hours.",
+    notes: "Useful for digestive disturbances due to excess."
+  },
+  {
+    name: "Pulsatilla",
+    keywords: ["cold","cough","runny nose","sticky","weeping","mild fever"],
+    symptoms: "Thick, bland yellow/green discharge, changing symptoms, tearful.",
+    potency: "30C",
+    dosage: "One dose 30C; repeat infrequently if no improvement.",
+    notes: "Often for children/women with changeable symptoms."
+  },
+  {
+    name: "Bryonia alba",
+    keywords: ["dry cough","worse with movement","bodyache","thirsty"],
+    symptoms: "Dry, painful cough, worse from slightest motion; wants to be still.",
+    potency: "30C",
+    dosage: "One dose 30C, repeat if necessary.",
+    notes: "Useful in chest complaints with stitching pains."
+  },
+  {
+    name: "Chamomilla",
+    keywords: ["teething","irritable baby","ear pain","colic","sore"],
+    symptoms: "Extreme irritability, one cheek hot, wants to be carried.",
+    potency: "30C",
+    dosage: "1-2 pellets 30C; repeat as needed.",
+    notes: "Common for teething and acute infant distress."
+  },
+  {
+    name: "Belladonna",
+    keywords: ["high fever","red face","throbbing","sudden onset","sensitive to light"],
+    symptoms: "Sudden high fever, flushed face, throbbing pains.",
+    potency: "30C",
+    dosage: "One dose 30C; seek medical care if fever very high.",
+    notes: "Acute febrile conditions with heat/redness."
+  }
+];
+
+/* -------------------------
+  Utility: lookup remedies by message
+  Returns array of matching remedies (by keyword)
+---------------------------- */
+function lookupRemedies(message){
+  const text = (message || "").toLowerCase();
+  const matches = [];
+  for(const r of remediesDB){
+    for(const kw of r.keywords){
+      if(text.includes(kw.toLowerCase())){
+        matches.push(r);
+        break;
+      }
+    }
+  }
+  return matches;
+}
+
+/* -------------------------
+  Storage for chat history (will save objects: {type:'bot'|'user', text, html})
+---------------------------- */
+let chatHistory = JSON.parse(localStorage.getItem("hb_chat_history") || "[]");
+
+/* Elements */
+const chatArea = document.getElementById("chatArea");
+const messageInput = document.getElementById("messageInput");
 const askBtn = document.getElementById("askBtn");
 const clearBtn = document.getElementById("clearBtn");
-const micBtn = document.getElementById("micButton");
+const micBtn = document.getElementById("micBtn");
 
-let history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
-let greetingShown = false;
+/* render saved history on load */
+function renderHistory(){
+  chatArea.innerHTML = "";
+  for(const item of chatHistory){
+    renderMessage(item);
+  }
+  chatArea.scrollTop = chatArea.scrollHeight;
+}
+function saveToHistory(obj){
+  chatHistory.push(obj);
+  localStorage.setItem("hb_chat_history", JSON.stringify(chatHistory));
+}
 
-/* LOAD SAVED HISTORY */
-history.forEach(m => addMessage(m.text, m.type));
-
-function addMessage(text, type) {
+/* renderMessage supports text or html */
+function renderMessage(item){
   const row = document.createElement("div");
-  row.className = `msg-row ${type}-row`;
+  row.className = "msg-row " + (item.type === "bot" ? "bot-row" : "user-row");
 
   const avatar = document.createElement("div");
-  avatar.className = `avatar ${type}-avatar`;
-  avatar.textContent = type === "bot" ? "Dr" : "You";
+  avatar.className = "avatar " + (item.type === "bot" ? "bot-avatar" : "user-avatar");
+  avatar.textContent = item.type === "bot" ? "Dr" : "You";
 
   const bubble = document.createElement("div");
-  bubble.className = `bubble ${type}-bubble`;
-  bubble.textContent = text;
+  bubble.className = "bubble " + (item.type === "bot" ? "bot-bubble" : "user-bubble");
+  if(item.html){
+    bubble.innerHTML = item.text;
+  } else {
+    bubble.textContent = item.text;
+  }
 
   row.appendChild(avatar);
   row.appendChild(bubble);
-  chatbox.appendChild(row);
-  chatbox.scrollTop = chatbox.scrollHeight;
-
-  history.push({ text, type });
-  localStorage.setItem("chatHistory", JSON.stringify(history));
+  chatArea.appendChild(row);
+  chatArea.scrollTop = chatArea.scrollHeight;
 }
 
-function showGreeting() {
-  addMessage(
-`Hello! Namaste. Main Dr. Bhavna hoon.
+/* helper to add text message easily */
+function addMessage(type, text, html=false){
+  const obj = { type, text, html };
+  renderMessage(obj);
+  saveToHistory(obj);
+}
+
+/* show nicely formatted remedies (html) */
+function displayRemediesAsHTML(remedies){
+  if(!remedies || remedies.length===0){
+    addMessage("bot", "Sorry — no matching homeopathic remedies found locally for your symptoms. I'll try to get more information from the doctor.", false);
+    return;
+  }
+  let html = "<div>";
+  for(const r of remedies){
+    html += `<div class="remedy-card">
+      <div class="remedy-title">${escapeHtml(r.name)}</div>
+      <div class="remedy-meta"><strong>Common symptoms:</strong> ${escapeHtml(r.symptoms)}</div>
+      <div class="remedy-meta"><strong>Suggested potency:</strong> ${escapeHtml(r.potency)} &nbsp; | &nbsp; <strong>Dosage:</strong> ${escapeHtml(r.dosage)}</div>
+      <div class="remedy-note">${escapeHtml(r.notes)}</div>
+    </div>`;
+  }
+  html += "</div>";
+  addMessage("bot", html, true);
+}
+
+/* escape HTML to avoid injection when inserting plain text */
+function escapeHtml(unsafe){
+  return String(unsafe)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+/* Greeting logic: show once when user first asks */
+let greetingShown = chatHistory.some(h=>h.type==='bot') ? true : false;
+
+/* Connect to server (only if local DB didn't match) */
+let ws = null;
+function connectWebSocket(message){
+  // Show a placeholder bot bubble streaming style:
+  addMessage("bot", "Thinking... connecting to server for more details...", false);
+
+  try {
+    ws = new WebSocket("wss://backend.buildpicoapps.com/api/chatbot/chat");
+  } catch(e){
+    // fallback
+    addMessage("bot", "Unable to connect to server. Showing local suggestions only.", false);
+    return;
+  }
+
+  let botMsgIndex = chatHistory.length; // not used directly
+  // replace last "Thinking..." bubble with streaming content: simpler approach: append new bubble and continue
+  const streamingIndex = chatHistory.length;
+  // create an empty streaming bubble object
+  const streamingObj = { type: "bot", text: "", html:false };
+  // render now (so user sees bubble)
+  renderMessage(streamingObj);
+  // and push to history (so we can update)
+  saveToHistory(streamingObj);
+
+  ws.onopen = ()=> {
+    ws.send(JSON.stringify({
+      chatId: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+      appId: "before-religious",
+      systemPrompt: "You are a knowledgeable homeopath. Answer succinctly and list remedies if applicable.",
+      message
+    }));
+  };
+
+  ws.onmessage = (e)=> {
+    // append incoming text to last bot bubble in DOM & in history
+    // update last item in chatHistory
+    const data = String(e.data || "");
+    // update history
+    const lastIndex = chatHistory.length - 1;
+    if(lastIndex >=0 && chatHistory[lastIndex].type === "bot"){
+      chatHistory[lastIndex].text += data;
+      // re-render entire area (simple) — could optimize
+      localStorage.setItem("hb_chat_history", JSON.stringify(chatHistory));
+      renderHistory();
+    } else {
+      addMessage("bot", data, false);
+    }
+  };
+
+  ws.onclose = ()=> {
+    addMessage("bot", "\n\n(End of server response.)", false);
+  };
+
+  ws.onerror = (err)=> {
+    console.error("WS error", err);
+  };
+}
+
+/* Handle ask button click */
+document.getElementById("askBtn").addEventListener("click", ()=>{
+  const msg = (messageInput.value || "").trim();
+  if(!msg) return;
+
+  // show greeting if not already
+  if(!greetingShown){
+    addMessage("bot", `Hello! Namaste. Main Dr. Bhavna hoon.
 
 Batayein, aap kaise hain aur aaj main aapki kaise madad kar sakti hoon?
 
-Note: I am an AI assistant representing Dr. Bhavna's expertise.`,
-    "bot"
-  );
-}
-
-askBtn.onclick = () => {
-  if (!input.value.trim()) return;
-
-  if (!greetingShown) {
-    showGreeting();
+Note: I am an AI assistant representing Dr. Bhavna's expertise.`, false);
     greetingShown = true;
   }
 
-  const msg = input.value;
-  input.value = "";
-  addMessage(msg, "user");
+  // render user message
+  addMessage("user", msg, false);
 
-  addMessage(
-    "Thank you for sharing. I will guide you based on homeopathic principles.",
-    "bot"
-  );
-};
+  // 1) Try local DB lookup
+  const localMatches = lookupRemedies(msg);
+  if(localMatches.length > 0){
+    // show local remedies immediately
+    displayRemediesAsHTML(localMatches);
+    // optional: also call server for more commentary (comment/uncomment as needed)
+    // connectWebSocket(msg);
+  } else {
+    // no local match -> query server
+    connectWebSocket(msg);
+  }
 
-clearBtn.onclick = () => {
-  chatbox.innerHTML = "";
-  localStorage.removeItem("chatHistory");
-  history = [];
+  messageInput.value = "";
+});
+
+/* Clear chat */
+document.getElementById("clearBtn").addEventListener("click", ()=>{
+  chatHistory = [];
+  localStorage.removeItem("hb_chat_history");
+  chatArea.innerHTML = "";
   greetingShown = false;
-};
+});
 
-/* MIC INPUT */
-const SpeechRecognition =
-  window.SpeechRecognition || window.webkitSpeechRecognition;
-
-if (SpeechRecognition) {
+/* Mic input (speech-to-text) */
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+if(SpeechRecognition){
   const rec = new SpeechRecognition();
   rec.lang = "en-IN";
-  micBtn.onclick = () => rec.start();
-  rec.onresult = e => input.value = e.results[0][0].transcript;
-}
-</script>
+  rec.interimResults = false;
 
+  micBtn.addEventListener("click", ()=> {
+    try{
+      rec.start();
+    }catch(e){ console.log(e); }
+  });
+
+  rec.addEventListener("result", (ev)=>{
+    const t = ev.results[0][0].transcript;
+    messageInput.value = t;
+  });
+} else {
+  micBtn.style.display = "none";
+}
+
+/* render existing history on load */
+renderHistory();
+
+/* keep focus on input */
+messageInput.addEventListener("keydown", (e)=>{
+  if(e.key === "Enter") document.getElementById("askBtn").click();
+});
+</script>
 </body>
 </html>
