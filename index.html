@@ -3,27 +3,40 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dr. Bhavna – Homeopathy Consultation</title>
+<title>Dr. Bhavna – Homeopathy Consultation Bot</title>
 
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.3/dist/tailwind.min.css" rel="stylesheet"/>
 
 <style>
-body{background:#eef4fb}
-.header{background:#fff;padding:14px;display:flex;gap:12px;
-align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.08)}
-.header img{width:52px;height:52px;border-radius:12px}
-.chat{height:40vh;overflow-y:auto;padding:16px}
+body { background:#eef4fb; }
+.header{
+  background:#fff;padding:14px;display:flex;gap:12px;
+  align-items:center;justify-content:center;
+  box-shadow:0 2px 10px rgba(0,0,0,.08)
+}
+.header img{width:50px;height:50px;border-radius:12px}
+.chat{height:55vh;overflow-y:auto;padding:16px}
 .row{display:flex;gap:10px;margin-bottom:12px;max-width:85%}
 .bot{align-self:flex-start}
 .user{align-self:flex-end;flex-direction:row-reverse}
-.avatar{width:40px;height:40px;border-radius:50%;
-display:flex;align-items:center;justify-content:center;font-weight:bold;color:#fff}
+.avatar{
+  width:38px;height:38px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:bold;color:#fff;font-size:14px
+}
 .botA{background:#16a34a}
 .userA{background:#2563eb}
-.bubble{background:#fff;padding:14px;border-radius:14px;font-size:14px;
-border:1px solid #e5e7eb}
+.bubble{
+  background:#fff;padding:14px;border-radius:14px;
+  font-size:14px;line-height:1.6;border:1px solid #e5e7eb
+}
 .user .bubble{background:#dbeafe}
-.hidden{display:none}
+.card{
+  border-left:4px solid #2563eb;background:#f8fafc;
+  padding:10px;border-radius:10px;margin-top:8px
+}
+.card h4{font-weight:700;color:#1f2937}
+.card p{font-size:13px;color:#374151;margin-top:4px}
 </style>
 </head>
 
@@ -31,13 +44,13 @@ border:1px solid #e5e7eb}
 
 <!-- HEADER -->
 <div class="header">
-  <img src="bot.png">
+  <img src="bot.png" alt="Logo">
   <div>
     <div class="text-lg font-bold text-blue-700">
       Dr. Bhavna – Homeopathy Consultation
     </div>
     <div class="text-xs text-gray-500">
-      Classical Homeopathy • Symptom Guidance
+      Classical Homeopathy • Symptom-Based Guidance
     </div>
   </div>
 </div>
@@ -45,14 +58,153 @@ border:1px solid #e5e7eb}
 <!-- CHAT -->
 <div id="chat" class="chat max-w-3xl mx-auto flex flex-col"></div>
 
-<!-- CHAT INPUT -->
+<!-- INPUT -->
 <div class="bg-white p-4 shadow max-w-3xl mx-auto w-full">
   <input id="msg" class="border rounded w-full px-3 py-2 mb-2"
-    placeholder="Describe your symptoms...">
+    placeholder="Describe your symptoms in detail…">
   <div class="flex justify-between">
-    <button id="ask" class="bg-blue-600 text-white px-4 py-2 rounded">Ask Doctor</button>
-    <button id="clear" class="bg-red-500 text-white px-4 py-2 rounded">Clear</button>
+    <button id="ask" class="bg-blue-600 text-white px-4 py-2 rounded">
+      Ask Doctor
+    </button>
+    <button id="clear" class="bg-red-500 text-white px-4 py-2 rounded">
+      Clear
+    </button>
   </div>
 </div>
 
-<!-- AP
+<!-- FOOTER -->
+<footer class="bg-white border-t p-4 text-center text-xs text-gray-600">
+<strong>Disclaimer:</strong>
+This chatbot provides preliminary homeopathic guidance only.
+Final remedy, potency & repetition require personal consultation.
+</footer>
+
+<script>
+/* ================= MEDICINE DATABASE (8 Remedies) ================= */
+const medicines = [
+{
+  name:"Belladonna",
+  keywords:["fever","headache","throbbing","red","heat","sudden"],
+  symptoms:"Sudden high fever, throbbing headache, red hot face.",
+  keynotes:"Sudden violent onset, heat, redness, sensitivity."
+},
+{
+  name:"Nux Vomica",
+  keywords:["constipation","gas","irritable","indigestion","overwork"],
+  symptoms:"Constipation with constant urging, gastric disturbance.",
+  keynotes:"Overworked, chilly, irritable temperament."
+},
+{
+  name:"Pulsatilla",
+  keywords:["cold","cough","yellow","discharge","changeable"],
+  symptoms:"Thick bland yellow discharge, mild fever.",
+  keynotes:"Changeable symptoms, better open air."
+},
+{
+  name:"Arnica Montana",
+  keywords:["injury","bruise","trauma","sore","shock"],
+  symptoms:"Soreness as if beaten, after injury or fall.",
+  keynotes:"Fear of touch, says nothing is wrong."
+},
+{
+  name:"Bryonia Alba",
+  keywords:["dry","pain","movement","thirst","worse motion"],
+  symptoms:"Dry cough, stitching pains, worse by motion.",
+  keynotes:"Better by rest, wants to be left alone."
+},
+{
+  name:"Rhus Toxicodendron",
+  keywords:["stiff","joint pain","restless","better motion"],
+  symptoms:"Stiffness and pain, worse at rest, better movement.",
+  keynotes:"Restlessness, worse damp weather."
+},
+{
+  name:"Sulphur",
+  keywords:["burning","heat","skin","chronic","standing"],
+  symptoms:"Burning sensations, heat in feet, skin issues.",
+  keynotes:"Heat, standing thinker, chronic complaints."
+},
+{
+  name:"Calcarea Carbonica",
+  keywords:["fatigue","sweating","cold","slow","anxiety"],
+  symptoms:"Easy fatigue, cold sensitivity, head sweating.",
+  keynotes:"Chilly, slow, anxious about health."
+}
+];
+
+/* ================= CHAT FUNCTIONS ================= */
+const chat = document.getElementById("chat");
+const msg = document.getElementById("msg");
+
+function add(type,text,html=false){
+  const row=document.createElement("div");
+  row.className="row "+type;
+  const avatar=document.createElement("div");
+  avatar.className="avatar "+(type==="bot"?"botA":"userA");
+  avatar.innerText=type==="bot"?"Dr":"You";
+  const bubble=document.createElement("div");
+  bubble.className="bubble";
+  if(html) bubble.innerHTML=text; else bubble.innerText=text;
+  row.append(avatar,bubble);
+  chat.appendChild(row);
+  chat.scrollTop=chat.scrollHeight;
+}
+
+/* ================= GREETING ================= */
+add("bot",
+"🙏 Welcome to Dr. Bhavna’s Homeopathy Consultation System.\n\n" +
+"Please describe your symptoms clearly, including:\n" +
+"• Location of complaint\n" +
+"• Sensation (pain, burning, throbbing)\n" +
+"• What makes it better or worse\n" +
+"• Time, weather or food effects\n\n" +
+"This system offers preliminary guidance only. " +
+"Accurate remedy selection requires detailed case-taking."
+);
+
+/* ================= ASK LOGIC ================= */
+document.getElementById("ask").onclick=()=>{
+  if(!msg.value.trim()) return;
+
+  const userText = msg.value.toLowerCase();
+  msg.value="";
+  add("user",userText);
+
+  const results = medicines
+    .map(m=>{
+      let score=0;
+      m.keywords.forEach(k=>{
+        if(userText.includes(k)) score++;
+      });
+      return {...m,score};
+    })
+    .filter(m=>m.score>0)
+    .sort((a,b)=>b.score-a.score)
+    .slice(0,2);
+
+  if(!results.length){
+    add("bot","No close remedy match found. Personal consultation is advised.");
+    return;
+  }
+
+  let html="";
+  results.forEach(m=>{
+    html+=`
+      <div class="card">
+        <h4>${m.name}</h4>
+        <p><b>Main symptoms:</b> ${m.symptoms}</p>
+        <p><b>Keynotes:</b> ${m.keynotes}</p>
+        <p class="text-xs text-gray-500 mt-2">
+          Note: Potency & repetition must be decided by a qualified homeopath.
+        </p>
+      </div>
+    `;
+  });
+  add("bot",html,true);
+};
+
+document.getElementById("clear").onclick=()=>chat.innerHTML="";
+</script>
+
+</body>
+</html>
