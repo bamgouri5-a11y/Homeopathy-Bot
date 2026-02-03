@@ -10,30 +10,41 @@
 <style>
 body { background:#eef4fb; }
 .header{
-  background:#fff;padding:14px;display:flex;gap:12px;
-  align-items:center;justify-content:center;
+  background:#fff;
+  padding:14px;
+  display:flex;
+  gap:12px;
+  align-items:center;
+  justify-content:center;
   box-shadow:0 2px 10px rgba(0,0,0,.08)
 }
-.header img{width:50px;height:50px;border-radius:12px}
+.header img{width:52px;height:52px;border-radius:12px}
 .chat{height:55vh;overflow-y:auto;padding:16px}
 .row{display:flex;gap:10px;margin-bottom:12px;max-width:85%}
 .bot{align-self:flex-start}
 .user{align-self:flex-end;flex-direction:row-reverse}
 .avatar{
-  width:38px;height:38px;border-radius:50%;
+  width:40px;height:40px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
   font-weight:bold;color:#fff;font-size:14px
 }
 .botA{background:#16a34a}
 .userA{background:#2563eb}
 .bubble{
-  background:#fff;padding:14px;border-radius:14px;
-  font-size:14px;line-height:1.6;border:1px solid #e5e7eb
+  background:#fff;
+  padding:14px;
+  border-radius:14px;
+  font-size:14px;
+  line-height:1.6;
+  border:1px solid #e5e7eb
 }
 .user .bubble{background:#dbeafe}
 .card{
-  border-left:4px solid #2563eb;background:#f8fafc;
-  padding:10px;border-radius:10px;margin-top:8px
+  border-left:4px solid #2563eb;
+  background:#f8fafc;
+  padding:10px;
+  border-radius:10px;
+  margin-top:8px
 }
 .card h4{font-weight:700;color:#1f2937}
 .card p{font-size:13px;color:#374151;margin-top:4px}
@@ -60,8 +71,9 @@ body { background:#eef4fb; }
 
 <!-- INPUT -->
 <div class="bg-white p-4 shadow max-w-3xl mx-auto w-full">
-  <input id="msg" class="border rounded w-full px-3 py-2 mb-2"
-    placeholder="Describe your symptoms in detail…">
+  <input id="msg"
+    class="border rounded w-full px-3 py-2 mb-2"
+    placeholder="Describe your symptoms clearly…">
   <div class="flex justify-between">
     <button id="ask" class="bg-blue-600 text-white px-4 py-2 rounded">
       Ask Doctor
@@ -76,11 +88,11 @@ body { background:#eef4fb; }
 <footer class="bg-white border-t p-4 text-center text-xs text-gray-600">
 <strong>Disclaimer:</strong>
 This chatbot provides preliminary homeopathic guidance only.
-Final remedy, potency & repetition require personal consultation.
+Final remedy selection, potency & repetition require personal consultation.
 </footer>
 
 <script>
-/* ================= MEDICINE DATABASE (8 Remedies) ================= */
+/* ================= MEDICINE DATABASE ================= */
 const medicines = [
 {
   name:"Belladonna",
@@ -91,14 +103,14 @@ const medicines = [
 {
   name:"Nux Vomica",
   keywords:["constipation","gas","irritable","indigestion","overwork"],
-  symptoms:"Constipation with constant urging, gastric disturbance.",
-  keynotes:"Overworked, chilly, irritable temperament."
+  symptoms:"Constipation with frequent urging, gastric disturbance.",
+  keynotes:"Overworked, chilly, irritable patients."
 },
 {
   name:"Pulsatilla",
   keywords:["cold","cough","yellow","discharge","changeable"],
   symptoms:"Thick bland yellow discharge, mild fever.",
-  keynotes:"Changeable symptoms, better open air."
+  keynotes:"Changeable symptoms, better in open air."
 },
 {
   name:"Arnica Montana",
@@ -108,21 +120,21 @@ const medicines = [
 },
 {
   name:"Bryonia Alba",
-  keywords:["dry","pain","movement","thirst","worse motion"],
-  symptoms:"Dry cough, stitching pains, worse by motion.",
+  keywords:["dry","pain","motion","thirst","worse movement"],
+  symptoms:"Dry cough, stitching pains, worse by movement.",
   keynotes:"Better by rest, wants to be left alone."
 },
 {
   name:"Rhus Toxicodendron",
   keywords:["stiff","joint pain","restless","better motion"],
-  symptoms:"Stiffness and pain, worse at rest, better movement.",
+  symptoms:"Stiffness and pain, worse at rest, better by motion.",
   keynotes:"Restlessness, worse damp weather."
 },
 {
   name:"Sulphur",
   keywords:["burning","heat","skin","chronic","standing"],
-  symptoms:"Burning sensations, heat in feet, skin issues.",
-  keynotes:"Heat, standing thinker, chronic complaints."
+  symptoms:"Burning sensations, heat in feet, chronic complaints.",
+  keynotes:"Heat, neglect of hygiene, philosophical mind."
 },
 {
   name:"Calcarea Carbonica",
@@ -133,18 +145,22 @@ const medicines = [
 ];
 
 /* ================= CHAT FUNCTIONS ================= */
-const chat = document.getElementById("chat");
-const msg = document.getElementById("msg");
+const chat=document.getElementById("chat");
+const msg=document.getElementById("msg");
 
 function add(type,text,html=false){
   const row=document.createElement("div");
   row.className="row "+type;
+
   const avatar=document.createElement("div");
   avatar.className="avatar "+(type==="bot"?"botA":"userA");
   avatar.innerText=type==="bot"?"Dr":"You";
+
   const bubble=document.createElement("div");
   bubble.className="bubble";
-  if(html) bubble.innerHTML=text; else bubble.innerText=text;
+  if(html) bubble.innerHTML=text;
+  else bubble.innerText=text;
+
   row.append(avatar,bubble);
   chat.appendChild(row);
   chat.scrollTop=chat.scrollHeight;
@@ -153,20 +169,20 @@ function add(type,text,html=false){
 /* ================= GREETING ================= */
 add("bot",
 "🙏 Welcome to Dr. Bhavna’s Homeopathy Consultation System.\n\n" +
-"Please describe your symptoms clearly, including:\n" +
+"Please describe your symptoms in detail, including:\n" +
 "• Location of complaint\n" +
-"• Sensation (pain, burning, throbbing)\n" +
+"• Sensation (burning, throbbing, stitching, etc.)\n" +
 "• What makes it better or worse\n" +
-"• Time, weather or food effects\n\n" +
-"This system offers preliminary guidance only. " +
-"Accurate remedy selection requires detailed case-taking."
+"• Time, weather, food effects\n\n" +
+"This system provides preliminary homeopathic guidance only. " +
+"Accurate remedy selection requires full case-taking."
 );
 
 /* ================= ASK LOGIC ================= */
 document.getElementById("ask").onclick=()=>{
   if(!msg.value.trim()) return;
 
-  const userText = msg.value.toLowerCase();
+  const userText=msg.value.toLowerCase();
   msg.value="";
   add("user",userText);
 
@@ -183,7 +199,10 @@ document.getElementById("ask").onclick=()=>{
     .slice(0,2);
 
   if(!results.length){
-    add("bot","No close remedy match found. Personal consultation is advised.");
+    add("bot",
+      "No close remedy match found based on provided symptoms. " +
+      "Personal consultation is recommended for accurate treatment."
+    );
     return;
   }
 
@@ -195,11 +214,12 @@ document.getElementById("ask").onclick=()=>{
         <p><b>Main symptoms:</b> ${m.symptoms}</p>
         <p><b>Keynotes:</b> ${m.keynotes}</p>
         <p class="text-xs text-gray-500 mt-2">
-          Note: Potency & repetition must be decided by a qualified homeopath.
+          Note: Potency and repetition must be decided by a qualified homeopath.
         </p>
       </div>
     `;
   });
+
   add("bot",html,true);
 };
 
