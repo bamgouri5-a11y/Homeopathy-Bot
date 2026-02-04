@@ -10,7 +10,7 @@
 
 <style>
 body{background:#eef4fb}
-.chat{height:55vh;overflow-y:auto}
+.chat{height:50vh;overflow-y:auto}
 .card{background:#f8fafc;border-left:4px solid #2563eb}
 .hidden{display:none}
 </style>
@@ -20,7 +20,7 @@ body{background:#eef4fb}
 
 <!-- HEADER -->
 <header class="bg-white shadow p-4 flex items-center justify-center gap-3">
-  <img src="bot.png" class="w-12 h-12 rounded-lg" />
+  <img src="bot.png" class="w-12 h-12 rounded-lg"/>
   <div>
     <h1 class="text-lg font-bold text-blue-700">
       Dr. Bhavna – Homeopathy Consultation Bot
@@ -31,41 +31,49 @@ body{background:#eef4fb}
   </div>
 </header>
 
-<!-- ADMIN + LANG -->
-<section class="max-w-3xl mx-auto w-full bg-white p-3 mt-2 rounded shadow">
-  <div class="flex flex-col sm:flex-row gap-2 justify-between items-center">
-    <div class="flex gap-2 items-center">
-      <input id="adminPass" type="password" placeholder="Doctor password"
-        class="border px-2 py-1 rounded text-sm"/>
-      <button onclick="loginAdmin()"
-        class="bg-blue-600 text-white px-3 py-1 rounded text-sm">
-        Login
-      </button>
-      <span id="adminStatus" class="text-xs"></span>
-    </div>
-    <button onclick="toggleLang()"
-      class="bg-green-600 text-white px-3 py-1 rounded text-sm">
-      हिंदी / English
+<!-- PATIENT SECTION (PUBLIC) -->
+<section class="max-w-3xl mx-auto w-full bg-white p-4 mt-3 rounded shadow">
+  <h2 class="font-bold text-blue-700 mb-2">Patient Details</h2>
+
+  <input id="ptName" class="border w-full px-2 py-1 mb-2" placeholder="Patient Name">
+  <input id="ptAge" class="border w-full px-2 py-1 mb-2" placeholder="Age">
+  <input id="ptMobile" class="border w-full px-2 py-1 mb-2" placeholder="Mobile Number">
+  <input id="ptAddress" class="border w-full px-2 py-1 mb-2" placeholder="Address">
+  <textarea id="ptComplaint" class="border w-full px-2 py-1 mb-2"
+    placeholder="Present Complaint"></textarea>
+
+  <button onclick="submitPatient()"
+    class="bg-green-600 text-white px-4 py-2 rounded w-full">
+    Submit to Doctor
+  </button>
+
+  <p id="ptStatus" class="text-xs mt-2"></p>
+</section>
+
+<!-- ADMIN LOGIN -->
+<section class="max-w-3xl mx-auto w-full bg-white p-3 mt-3 rounded shadow">
+  <div class="flex gap-2 items-center">
+    <input id="adminPass" type="password" placeholder="Doctor password"
+      class="border px-2 py-1 rounded">
+    <button onclick="loginAdmin()"
+      class="bg-blue-600 text-white px-3 py-1 rounded">
+      Login
     </button>
+    <span id="adminStatus" class="text-xs"></span>
   </div>
+</section>
+
+<!-- DOCTOR VIEW (ADMIN ONLY) -->
+<section id="doctorPanel"
+ class="max-w-3xl mx-auto w-full bg-white p-4 mt-3 rounded shadow hidden">
+  <h2 class="font-bold text-red-600 mb-3">Submitted Patient Complaints</h2>
+  <div id="caseList"></div>
 </section>
 
 <!-- CHAT -->
 <main id="chat"
  class="chat max-w-3xl mx-auto w-full p-4 flex flex-col gap-3">
 </main>
-
-<!-- PATIENT (ADMIN ONLY) -->
-<section id="patientBox"
- class="max-w-3xl mx-auto w-full bg-white p-3 mt-2 rounded shadow hidden">
-  <input id="pName" class="border w-full px-2 py-1 mb-1" placeholder="Patient Name"/>
-  <input id="pAge" class="border w-full px-2 py-1 mb-1" placeholder="Age"/>
-  <input id="pProb" class="border w-full px-2 py-1 mb-2" placeholder="Complaint"/>
-  <button onclick="makePDF()"
-    class="bg-red-600 text-white px-4 py-2 rounded w-full">
-    Generate PDF
-  </button>
-</section>
 
 <!-- INPUT -->
 <footer class="bg-white shadow p-3 sticky bottom-0">
@@ -89,110 +97,81 @@ body{background:#eef4fb}
 <script>
 const { jsPDF } = window.jspdf;
 let isAdmin=false;
-let lang="en";
-let medicines=[];
 
-/* ===== FALLBACK MEDICINES (SAFE) ===== */
-const fallback=[
-{name:"Belladonna",keys:["fever","throbbing","heat"],
-keynote:["Sudden onset","High fever","Throbbing pain"],
-basis:"Acute congestion"},
-{name:"Bryonia",keys:["motion","pain","dry"],
-keynote:["Worse motion","Dry mouth","Thirst"],
-basis:"Serous inflammation"},
-{name:"Arsenicum",keys:["burning","anxiety"],
-keynote:["Burning pains","Anxiety","Restlessness"],
-basis:"Exhaustion states"},
-{name:"Pulsatilla",keys:["cold","cough"],
-keynote:["Changeable","Better open air"],
-basis:"Venous congestion"},
-{name:"Nux vomica",keys:["constipation","gas"],
-keynote:["Irritable","Chilly","Overworked"],
-basis:"Gastric disorder"},
-{name:"Rhus tox",keys:["stiff","motion"],
-keynote:["Better motion","Worse rest"],
-basis:"Rheumatism"}
-];
+/* ================= PATIENT STORAGE ================= */
+let patientCases = JSON.parse(localStorage.getItem("patientCases") || "[]");
 
-/* ===== CSV LOAD ===== */
-fetch("medicines.csv")
-.then(r=>r.text())
-.then(d=>{
- medicines=d.trim().split("\n").slice(1).map(l=>{
-  const [n,k,kn,b]=l.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-  return{
-   name:n,
-   keys:k.replace(/"/g,"").split("|"),
-   keynote:kn.replace(/"/g,"").split(";"),
-   basis:b.replace(/"/g,"")
-  };
- });
-})
-.catch(()=>medicines=fallback);
+/* ===== PATIENT SUBMIT ===== */
+function submitPatient(){
+ const data={
+  name:ptName.value,
+  age:ptAge.value,
+  mobile:ptMobile.value,
+  address:ptAddress.value,
+  complaint:ptComplaint.value,
+  date:new Date().toLocaleString()
+ };
 
-/* ===== ADMIN ===== */
+ if(!data.name||!data.mobile||!data.complaint){
+  ptStatus.innerText="Please fill required fields";
+  ptStatus.className="text-xs text-red-600";
+  return;
+ }
+
+ patientCases.push(data);
+ localStorage.setItem("patientCases",JSON.stringify(patientCases));
+
+ ptStatus.innerText="Details sent to doctor successfully";
+ ptStatus.className="text-xs text-green-600";
+
+ ptName.value=ptAge.value=ptMobile.value=
+ ptAddress.value=ptComplaint.value="";
+}
+
+/* ===== ADMIN LOGIN ===== */
 function loginAdmin(){
  if(adminPass.value==="admin123"){
   isAdmin=true;
-  adminStatus.textContent="Doctor logged in";
-  patientBox.classList.remove("hidden");
+  adminStatus.innerText="Doctor logged in";
+  doctorPanel.classList.remove("hidden");
+  renderCases();
  }else{
-  adminStatus.textContent="Wrong password";
+  adminStatus.innerText="Wrong password";
  }
 }
 
-/* ===== LANGUAGE ===== */
-function toggleLang(){
- lang=lang==="en"?"hi":"en";
- msg.placeholder=lang==="hi"
-  ?"अपने लक्षण लिखें (बुखार, दर्द, बेचैनी)…"
-  :"Describe symptoms…";
+/* ===== SHOW CASES ===== */
+function renderCases(){
+ caseList.innerHTML="";
+ patientCases.forEach((c,i)=>{
+  caseList.innerHTML+=`
+   <div class="card p-3 mb-3 rounded">
+    <b>${c.name}</b> | Age: ${c.age}<br>
+    📞 ${c.mobile}<br>
+    🏠 ${c.address}<br>
+    <small>${c.date}</small>
+    <p class="mt-1 text-sm"><b>Complaint:</b> ${c.complaint}</p>
+    <button onclick="makePDF(${i})"
+     class="bg-red-600 text-white px-3 py-1 rounded mt-2">
+     Generate PDF
+    </button>
+   </div>
+  `;
+ });
 }
-
-/* ===== CHAT ===== */
-const chat=document.getElementById("chat");
-function bubble(who,html){
- const d=document.createElement("div");
- d.className=`max-w-[90%] p-3 rounded border ${
-  who==="bot"?"bg-white":"bg-blue-100 self-end"
- }`;
- d.innerHTML=html;
- chat.append(d);
- chat.scrollTop=chat.scrollHeight;
-}
-
-ask.onclick=()=>{
- if(!msg.value)return;
- const q=msg.value.toLowerCase();
- bubble("user",msg.value);
- msg.value="";
- let res=medicines.filter(m=>m.keys.some(k=>q.includes(k)));
- while(res.length<6)res.push(medicines[res.length]||fallback[res.length]);
- let html=res.slice(0,6).map(m=>`
-  <div class="card p-3 rounded mb-2">
-   <b>${m.name}</b>
-   <ul class="list-disc ml-4 text-sm">
-    ${m.keynote.map(x=>`<li>${x}</li>`).join("")}
-   </ul>
-   <div class="text-xs mt-1"><b>Basis:</b> ${m.basis}</div>
-  </div>`).join("");
- bubble("bot",html);
-};
 
 /* ===== PDF ===== */
-function makePDF(){
- if(!isAdmin)return;
+function makePDF(i){
+ const c=patientCases[i];
  const pdf=new jsPDF();
- pdf.text("Dr. Bhavna – Homeopathic Prescription",10,15);
- pdf.text(`Patient: ${pName.value}`,10,30);
- pdf.text(`Age: ${pAge.value}`,10,38);
- pdf.text(`Complaint: ${pProb.value}`,10,46);
- let y=60;
- medicines.slice(0,6).forEach(m=>{
-  pdf.text(`• ${m.name}`,10,y);y+=7;
- });
- pdf.text("For professional use only.",10,y+10);
- pdf.save("Prescription.pdf");
+ pdf.text("Dr. Bhavna – Homeopathic Consultation",10,15);
+ pdf.text(`Patient: ${c.name}`,10,30);
+ pdf.text(`Age: ${c.age}`,10,38);
+ pdf.text(`Mobile: ${c.mobile}`,10,46);
+ pdf.text(`Address: ${c.address}`,10,54);
+ pdf.text(`Complaint: ${c.complaint}`,10,62);
+ pdf.text("For professional homeopathic use only.",10,80);
+ pdf.save(c.name+"_case.pdf");
 }
 
 /* ===== MIC ===== */
