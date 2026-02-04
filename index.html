@@ -18,9 +18,13 @@ body{background:#eef4fb}
 
 <body class="flex flex-col min-h-screen">
 
-<!-- HEADER -->
+<!-- HEADER WITH REAL LOGO -->
 <header class="bg-white shadow p-4 flex items-center justify-center gap-3">
-  <img src="bot.png" class="w-12 h-12 rounded-lg"/>
+  <img
+    src="https://cdn-icons-png.flaticon.com/512/387/387561.png"
+    alt="Doctor Logo"
+    class="w-12 h-12 rounded-lg"
+  />
   <div>
     <h1 id="title" class="text-lg font-bold text-blue-700">
       Dr. Bhavna – Homeopathy Consultation Bot
@@ -58,35 +62,12 @@ body{background:#eef4fb}
   <p id="ptStatus" class="text-xs mt-2"></p>
 </section>
 
-<!-- ADMIN LOGIN -->
-<section class="max-w-3xl mx-auto w-full bg-white p-3 mt-3 rounded shadow">
-  <div class="flex gap-2 items-center">
-    <input id="adminPass" type="password"
-      class="border px-2 py-1 rounded"
-      placeholder="Doctor password">
-    <button onclick="loginAdmin()"
-      class="bg-blue-600 text-white px-3 py-1 rounded">
-      Login
-    </button>
-    <span id="adminStatus" class="text-xs"></span>
-  </div>
-</section>
-
-<!-- DOCTOR PANEL -->
-<section id="doctorPanel"
- class="max-w-3xl mx-auto w-full bg-white p-4 mt-3 rounded shadow hidden">
-  <h2 id="doctorHeading" class="font-bold text-red-600 mb-3">
-    Submitted Patient Cases
-  </h2>
-  <div id="caseList"></div>
-</section>
-
 <!-- MEDICINE RESULTS -->
 <main id="chat"
  class="chat max-w-3xl mx-auto w-full p-4 flex flex-col gap-3">
 </main>
 
-<!-- FIND REMEDY INPUT -->
+<!-- FIND REMEDY -->
 <footer class="bg-white shadow p-3 sticky bottom-0">
   <div class="max-w-3xl mx-auto w-full">
     <input id="msg"
@@ -111,7 +92,7 @@ body{background:#eef4fb}
 </footer>
 
 <script>
-/* ================= LANGUAGE ================= */
+/* ===== LANGUAGE ===== */
 let lang="en";
 const t={
  en:{
@@ -119,7 +100,6 @@ const t={
   subtitle:"Classical • Symptomatology Based Guidance",
   ptHeading:"Patient Details",
   submit:"Submit to Doctor",
-  doctorHeading:"Submitted Patient Cases",
   find:"Find Remedies",
   clear:"Clear",
   msgPH:"Describe symptoms (fever, pain worse motion, anxiety)…"
@@ -129,7 +109,6 @@ const t={
   subtitle:"क्लासिकल • लक्षण आधारित मार्गदर्शन",
   ptHeading:"रोगी विवरण",
   submit:"डॉक्टर को भेजें",
-  doctorHeading:"भेजे गए रोगी विवरण",
   find:"दवा खोजें",
   clear:"साफ करें",
   msgPH:"अपने लक्षण लिखें (बुखार, दर्द, बेचैनी)…"
@@ -142,36 +121,32 @@ function toggleLang(){
  subtitle.innerText=t[lang].subtitle;
  ptHeading.innerText=t[lang].ptHeading;
  ptSubmit.innerText=t[lang].submit;
- doctorHeading.innerText=t[lang].doctorHeading;
  ask.innerText=t[lang].find;
  clearBtn.innerText=t[lang].clear;
  msg.placeholder=t[lang].msgPH;
 }
 
-/* ================= MEDICINES ================= */
+/* ===== MEDICINES ===== */
 const medicines=[
-{name:"Belladonna",keys:["fever","throbbing","heat","red"],
-keynote:["Sudden onset","High fever","Throbbing pains","Red hot face"],
+{name:"Belladonna",keys:["fever","throbbing","heat"],
+keynote:["Sudden onset","High fever","Throbbing pains"],
 basis:"Acute inflammatory congestion"},
 {name:"Bryonia alba",keys:["motion","pain","dry"],
-keynote:["Pain worse motion","Dry mouth","Thirst","Wants rest"],
+keynote:["Pain worse motion","Dry mouth","Thirst"],
 basis:"Serous inflammation"},
-{name:"Arsenicum album",keys:["burning","anxiety","weak"],
-keynote:["Burning pains","Anxiety","Restlessness","Prostration"],
+{name:"Arsenicum album",keys:["burning","anxiety"],
+keynote:["Burning pains","Anxiety","Restlessness"],
 basis:"Exhaustion states"},
-{name:"Pulsatilla",keys:["cold","cough","changeable"],
-keynote:["Changeable symptoms","Better open air","Mild"],
+{name:"Pulsatilla",keys:["cold","cough"],
+keynote:["Changeable","Better open air"],
 basis:"Venous congestion"},
-{name:"Nux vomica",keys:["constipation","gas","irritable"],
-keynote:["Irritable","Chilly","Overworked"],
+{name:"Nux vomica",keys:["constipation","gas"],
+keynote:["Irritable","Chilly"],
 basis:"Gastric disorder"},
-{name:"Rhus tox",keys:["stiff","motion","joint"],
-keynote:["Better motion","Worse rest","Stiffness"],
+{name:"Rhus tox",keys:["stiff","motion"],
+keynote:["Better motion","Worse rest"],
 basis:"Rheumatism"}
 ];
-
-/* ================= CHAT ================= */
-const chat=document.getElementById("chat");
 
 ask.onclick=()=>{
  if(!msg.value)return;
@@ -194,42 +169,7 @@ clearBtn.onclick=()=>{
  chat.innerHTML="";
 };
 
-/* ================= PATIENT SUBMIT ================= */
-let patientCases=JSON.parse(localStorage.getItem("patientCases")||"[]");
-function submitPatient(){
- if(!ptName.value||!ptMobile.value||!ptComplaint.value){
-  ptStatus.innerText="Please fill required fields";
-  ptStatus.className="text-xs text-red-600";return;
- }
- patientCases.push({
-  name:ptName.value,age:ptAge.value,mobile:ptMobile.value,
-  address:ptAddress.value,complaint:ptComplaint.value,
-  date:new Date().toLocaleString()
- });
- localStorage.setItem("patientCases",JSON.stringify(patientCases));
- ptStatus.innerText="Details sent successfully";
- ptStatus.className="text-xs text-green-600";
- ptName.value=ptAge.value=ptMobile.value=ptAddress.value=ptComplaint.value="";
-}
-
-/* ================= ADMIN ================= */
-function loginAdmin(){
- if(adminPass.value==="admin123"){
-  adminStatus.innerText="Doctor logged in";
-  doctorPanel.classList.remove("hidden");
-  caseList.innerHTML=patientCases.map(c=>`
-   <div class="card p-3 mb-2 rounded">
-    <b>${c.name}</b> | ${c.age}<br>
-    📞 ${c.mobile}<br>
-    🏠 ${c.address}<br>
-    <small>${c.date}</small>
-    <p class="text-sm"><b>Complaint:</b> ${c.complaint}</p>
-   </div>
-  `).join("");
- }else adminStatus.innerText="Wrong password";
-}
-
-/* ================= MIC ================= */
+/* ===== MIC ===== */
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 if(SR){
  const r=new SR();r.lang="en-IN";
