@@ -8,31 +8,17 @@
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.3/dist/tailwind.min.css" rel="stylesheet"/>
 
 <style>
-body { background:#eef4fb; }
-
+body{background:#eef4fb}
 .header{
-  background:#fff;
-  padding:14px;
-  display:flex;
-  gap:12px;
-  align-items:center;
-  justify-content:center;
+  background:#fff;padding:16px;display:flex;gap:14px;
+  align-items:center;justify-content:center;
   box-shadow:0 2px 10px rgba(0,0,0,.08)
 }
-.header img{
-  width:48px;height:48px;border-radius:10px;object-fit:cover
-}
-
-.chat{
-  height:62vh;
-  overflow-y:auto;
-  padding:16px
-}
-
-.row{display:flex;gap:10px;margin-bottom:12px;max-width:85%}
+.header img{width:50px;height:50px;border-radius:10px}
+.chat{height:60vh;overflow-y:auto;padding:16px}
+.row{display:flex;gap:10px;margin-bottom:14px;max-width:90%}
 .bot{align-self:flex-start}
 .user{align-self:flex-end;flex-direction:row-reverse}
-
 .avatar{
   width:40px;height:40px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
@@ -40,32 +26,19 @@ body { background:#eef4fb; }
 }
 .botA{background:#16a34a}
 .userA{background:#2563eb}
-
 .bubble{
-  background:#fff;
-  padding:14px;
-  border-radius:14px;
-  font-size:14px;
-  line-height:1.6;
-  border:1px solid #e5e7eb
+  background:#fff;padding:14px;border-radius:14px;
+  border:1px solid #e5e7eb;font-size:14px;line-height:1.6
 }
 .user .bubble{background:#dbeafe}
-
 .card{
-  border-left:4px solid #2563eb;
-  background:#f8fafc;
-  padding:10px;
-  border-radius:10px;
-  margin-top:8px
+  background:#f8fafc;border-left:4px solid #2563eb;
+  padding:12px;border-radius:10px;margin-top:10px
 }
 .card h4{font-weight:700;color:#1f2937}
-.card p{font-size:13px;color:#374151;margin-top:4px}
-
+.card ul{padding-left:18px;font-size:13px;color:#374151}
 .inputbar{
-  background:#fff;
-  padding:12px;
-  position:sticky;
-  bottom:0;
+  background:#fff;padding:12px;position:sticky;bottom:0;
   box-shadow:0 -2px 10px rgba(0,0,0,.08)
 }
 </style>
@@ -81,7 +54,7 @@ body { background:#eef4fb; }
       Dr. Bhavna – Homeopathy Consultation Bot
     </div>
     <div class="text-xs text-gray-500">
-      Classical Homeopathy | Symptom-Based Guidance
+      Classical • Symptomatology-Based Guidance
     </div>
   </div>
 </div>
@@ -92,14 +65,16 @@ body { background:#eef4fb; }
 <!-- INPUT -->
 <div class="inputbar max-w-3xl mx-auto w-full">
   <input id="msg" class="border rounded w-full px-3 py-2 mb-2"
-    placeholder="Describe your symptoms (e.g. headache worse by light, constipation, cold & cough)…">
+    placeholder="Describe symptoms (e.g. fever with throbbing headache, worse light)…">
 
   <div class="flex justify-between">
     <div class="space-x-2">
-      <button id="ask" class="bg-blue-600 text-white px-4 py-2 rounded">Ask Dr</button>
-      <button id="clear" class="bg-red-500 text-white px-4 py-2 rounded">Clear</button>
-      <a href="https://wa.me/919300119509" target="_blank"
-         class="bg-green-600 text-white px-4 py-2 rounded">Book Appointment</a>
+      <button id="ask" class="bg-blue-600 text-white px-4 py-2 rounded">
+        Ask Dr
+      </button>
+      <button id="clear" class="bg-gray-500 text-white px-4 py-2 rounded">
+        Clear
+      </button>
     </div>
     <button id="mic" class="bg-green-600 text-white px-4 py-2 rounded">🎤</button>
   </div>
@@ -107,101 +82,87 @@ body { background:#eef4fb; }
 
 <!-- FOOTER -->
 <footer class="bg-white border-t p-4 text-center text-xs text-gray-600">
-📧 <a href="mailto:drbhavnabamania@gmail.com" class="text-blue-600 font-semibold">
-drbhavnabamania@gmail.com</a><br><br>
-<strong>Disclaimer:</strong>
-This chatbot provides informational homeopathic guidance only.
-For correct remedy selection, potency & repetition, consult Dr. Bhavna personally.
+<strong>Disclaimer:</strong> Informational homeopathic guidance only.
+Consult a qualified homeopathic physician for prescription.
 </footer>
 
 <script>
-/* ================= HOMEOPATHY MEDICINES ================= */
-const medicines = [
+/* ================= 6 STANDARD REMEDIES ================= */
+const medicines=[
 {
  name:"Belladonna",
- keywords:["fever","headache","throbbing","red face","heat","sudden"],
- symptoms:"Sudden onset of high fever, throbbing headache, red hot face, dilated pupils.",
- keynotes:"Sudden violent symptoms, heat, redness, throbbing pains.",
- mind:"Restlessness, delirium, sensitive to light & noise.",
- potency:"30C, 200C",
- dosage:"1 dose every 6–8 hours in acute stage."
+ keys:["fever","throbbing","heat","red","light"],
+ keynote:["Sudden violent onset","High fever","Throbbing pains","Heat & redness"],
+ basis:"Acute inflammatory conditions with sudden congestion"
 },
 {
- name:"Nux Vomica",
- keywords:["constipation","indigestion","irritable","gas","overwork"],
- symptoms:"Constipation with ineffectual urging, indigestion, nausea.",
- keynotes:"Over-worked, irritable, chilly patients.",
- mind:"Anger, impatience, sensitive to cold.",
- potency:"30C",
- dosage:"Once daily or as prescribed."
+ name:"Bryonia alba",
+ keys:["pain","motion","dry","thirst"],
+ keynote:["Pain worse motion","Dry mouth","Great thirst","Wants rest"],
+ basis:"Serous inflammations; worse least movement"
+},
+{
+ name:"Arsenicum album",
+ keys:["burning","anxiety","weak","restless"],
+ keynote:["Burning pains","Great anxiety","Restlessness","Prostration"],
+ basis:"States of exhaustion with anxiety and chilliness"
 },
 {
  name:"Pulsatilla",
- keywords:["cold","cough","thick discharge","weeping","changeable"],
- symptoms:"Thick bland yellow discharge, mild fever, cough.",
- keynotes:"Changeable symptoms, better in open air.",
- mind:"Mild, tearful, seeks company.",
- potency:"30C",
- dosage:"One dose, repeat rarely."
+ keys:["cold","cough","changeable","weep"],
+ keynote:["Changeable symptoms","Bland discharges","Better open air","Mild nature"],
+ basis:"Venous congestion; gentle, yielding patients"
 },
 {
- name:"Arnica Montana",
- keywords:["injury","bruise","trauma","sore"],
- symptoms:"Soreness after injury, bruises, body ache.",
- keynotes:"Feels as if beaten; says nothing is wrong.",
- mind:"Fear of being touched.",
- potency:"30C, 200C",
- dosage:"One dose after injury."
+ name:"Nux vomica",
+ keys:["constipation","gas","irritable","overwork"],
+ keynote:["Irritable","Constipation with urging","Chilly","Over-worked"],
+ basis:"Functional gastric and hepatic disturbances"
+},
+{
+ name:"Rhus toxicodendron",
+ keys:["stiff","rest","motion","joint"],
+ keynote:["Stiffness on first motion","Better continued motion","Worse rest"],
+ basis:"Rheumatic and ligamentous complaints"
 }
 ];
 
-/* ================= CHAT LOGIC ================= */
+/* ================= CHAT ================= */
 const chat=document.getElementById("chat");
 const msg=document.getElementById("msg");
 
 function add(type,text,html=false){
-  const row=document.createElement("div");
-  row.className="row "+type;
-  const avatar=document.createElement("div");
-  avatar.className="avatar "+(type=="bot"?"botA":"userA");
-  avatar.innerText=type=="bot"?"Dr":"You";
-  const bubble=document.createElement("div");
-  bubble.className="bubble";
-  if(html) bubble.innerHTML=text; else bubble.innerText=text;
-  row.append(avatar,bubble);
-  chat.appendChild(row);
-  chat.scrollTop=chat.scrollHeight;
+ const row=document.createElement("div");
+ row.className="row "+type;
+ const a=document.createElement("div");
+ a.className="avatar "+(type=="bot"?"botA":"userA");
+ a.innerText=type=="bot"?"Dr":"You";
+ const b=document.createElement("div");
+ b.className="bubble";
+ html?b.innerHTML=text:b.innerText=text;
+ row.append(a,b);chat.append(row);
+ chat.scrollTop=chat.scrollHeight;
 }
 
 document.getElementById("ask").onclick=()=>{
-  if(!msg.value.trim()) return;
-  const userText=msg.value;
-  msg.value="";
-  add("user",userText);
+ if(!msg.value.trim())return;
+ const t=msg.value.toLowerCase();
+ add("user",msg.value);
+ msg.value="";
 
-  const found=medicines.filter(m =>
-    m.keywords.some(k => userText.toLowerCase().includes(k))
-  );
-
-  if(!found.length){
-    add("bot","No exact remedy found based on symptoms. Please book an appointment for detailed analysis.");
-    return;
+ let html="";
+ medicines.forEach(m=>{
+  if(m.keys.some(k=>t.includes(k))){
+   html+=`
+    <div class="card">
+     <h4>${m.name}</h4>
+     <ul>${m.keynote.map(k=>`<li>${k}</li>`).join("")}</ul>
+     <p class="text-xs mt-1"><b>Symptomatology:</b> ${m.basis}</p>
+    </div>`;
   }
+ });
 
-  let html="";
-  found.forEach(m=>{
-    html+=`
-      <div class="card">
-        <h4>${m.name}</h4>
-        <p><b>Main symptoms:</b> ${m.symptoms}</p>
-        <p><b>Key notes:</b> ${m.keynotes}</p>
-        <p><b>Mind & modalities:</b> ${m.mind}</p>
-        <p><b>Potency:</b> ${m.potency}</p>
-        <p><b>Dosage:</b> ${m.dosage}</p>
-      </div>
-    `;
-  });
-  add("bot",html,true);
+ add("bot",html||"No clear keynote match. Detailed case-taking recommended.",true);
 };
 
 document.getElementById("clear").onclick=()=>chat.innerHTML="";
@@ -214,5 +175,6 @@ if(SR){
  r.onresult=e=>msg.value=e.results[0][0].transcript;
 }
 </script>
+
 </body>
 </html>
