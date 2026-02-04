@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Homeopathy Doctor Reply System</title>
+<title>Homeopathic Symptom Checker</title>
 
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -11,137 +11,210 @@
 <style>
 body{background:#f1f5f9}
 .panel{background:#fff;border-radius:14px;padding:24px;box-shadow:0 8px 20px rgba(0,0,0,.06)}
-.hidden{display:none}
+.card{background:#f8fafc;border-left:5px solid #2563eb;padding:16px;border-radius:10px;margin-top:14px}
+.badge{background:#e0e7ff;color:#1e3a8a;padding:3px 8px;border-radius:999px;font-size:12px;margin-right:6px}
+.logo{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#16a34a);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold}
 </style>
 </head>
 
 <body class="min-h-screen flex flex-col">
 
+<!-- HEADER -->
 <header class="bg-white shadow">
- <div class="max-w-4xl mx-auto px-6 py-4 text-center">
-  <h1 class="text-2xl font-bold text-blue-700">
-   Doctor Reply & Notification Panel
-  </h1>
+ <div class="max-w-5xl mx-auto px-6 py-4 flex items-center gap-3">
+  <div class="logo">HB</div>
+  <div>
+   <h1 id="title" class="text-xl font-bold text-blue-700">
+    Homeopathic Symptom Checker
+   </h1>
+   <p class="text-xs text-gray-500">Patient self-assessment (Doctor approval required)</p>
+  </div>
+  <div class="ml-auto">
+   <button onclick="toggleLang()" class="bg-blue-600 text-white px-3 py-1 rounded text-sm">
+    🌐 English / हिंदी
+   </button>
+  </div>
  </div>
 </header>
 
-<!-- LOGIN -->
-<section class="max-w-4xl mx-auto px-6 py-8">
- <div class="panel">
-  <h2 class="font-bold text-red-600 mb-3">🔐 Doctor Login</h2>
-  <input id="adminUser" class="border p-3 w-full mb-2 rounded-lg" placeholder="Username">
-  <input id="adminPass" type="password" class="border p-3 w-full mb-2 rounded-lg" placeholder="Password">
-  <button onclick="adminLogin()" class="bg-red-600 text-white py-2 rounded-lg w-full">
-   Login
-  </button>
+<!-- MAIN -->
+<main class="max-w-5xl mx-auto px-6 py-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+
+<!-- LEFT -->
+<section class="panel">
+ <h2 id="symTitle" class="font-bold text-lg mb-2">🔍 Enter Symptoms</h2>
+
+ <div class="flex gap-2">
+  <textarea id="symptomInput" class="border rounded-lg p-3 w-full h-28"
+   placeholder="fever, headache, anxiety, joint pain"></textarea>
+  <button onclick="voiceInput('symptom')" class="bg-green-600 text-white px-3 rounded-lg">🎤</button>
  </div>
+
+ <button onclick="searchMedicine()" class="mt-4 bg-blue-600 text-white py-2 rounded-lg w-full">
+  Show Possible Medicines
+ </button>
+
+ <div id="medicineResult"></div>
 </section>
 
-<!-- DOCTOR PANEL -->
-<section id="doctorPanel" class="max-w-4xl mx-auto px-6 pb-10 hidden">
- <div class="panel">
+<!-- RIGHT -->
+<section class="panel">
+ <h2 id="patTitle" class="font-bold text-lg mb-2">📝 Patient Details</h2>
 
-  <h2 class="font-bold text-lg mb-4">🧾 Doctor Reply (Prescription)</h2>
+ <input id="pname" class="border p-3 rounded-lg w-full mb-2" placeholder="Name">
+ <input id="page" class="border p-3 rounded-lg w-full mb-2" placeholder="Age">
+ <input id="pmobile" class="border p-3 rounded-lg w-full mb-2" placeholder="Mobile Number">
+ <textarea id="paddress" class="border p-3 rounded-lg w-full mb-2"
+  placeholder="Address"></textarea>
 
-  <!-- Patient info (manual entry from received PDF) -->
-  <input id="rp_name" class="border p-3 rounded-lg w-full mb-2" placeholder="Patient Name">
-  <input id="rp_mobile" class="border p-3 rounded-lg w-full mb-2" placeholder="Patient Mobile Number">
-
-  <hr class="my-3">
-
-  <!-- Prescription -->
-  <input id="rp_medicine" class="border p-3 rounded-lg w-full mb-2" placeholder="Final Medicine">
-  <input id="rp_potency" class="border p-3 rounded-lg w-full mb-2" placeholder="Potency (e.g. 30C)">
-  <input id="rp_dosage" class="border p-3 rounded-lg w-full mb-2" placeholder="Dosage (e.g. 3 pills twice daily)">
-
-  <textarea id="rp_advice" class="border p-3 rounded-lg w-full h-24 mb-3"
-   placeholder="Doctor Advice"></textarea>
-
-  <button onclick="generateReplyPDF()" class="bg-purple-600 text-white py-2 rounded-lg w-full">
-   📄 Generate Doctor Reply PDF
-  </button>
-
-  <!-- NOTIFICATION -->
-  <div class="mt-6 border-t pt-4">
-   <h3 class="font-semibold mb-2">🔔 Notify Patient</h3>
-
-   <button onclick="sendWhatsApp()" class="bg-green-600 text-white py-2 rounded-lg w-full mb-2">
-    📲 Send WhatsApp
-   </button>
-
-   <button onclick="sendSMS()" class="bg-blue-600 text-white py-2 rounded-lg w-full">
-    📩 Send SMS
-   </button>
-  </div>
-
+ <label id="compLabel" class="font-semibold text-sm">Complaint</label>
+ <div class="flex gap-2 mt-1">
+  <textarea id="pcomplaint" class="border p-3 rounded-lg w-full h-24"
+   placeholder="Describe your main problem"></textarea>
+  <button onclick="voiceInput('complaint')" class="bg-green-600 text-white px-3 rounded-lg">🎤</button>
  </div>
+
+ <button onclick="submitCase()" class="mt-4 bg-green-600 text-white py-2 rounded-lg w-full">
+  Submit Case to Doctor
+ </button>
 </section>
 
-<footer class="bg-white border-t mt-auto text-xs text-gray-500 text-center p-4">
- ⚠ This system assists communication only. Prescription validity lies with doctor.
+</main>
+
+<!-- FOOTER -->
+<footer id="disclaimer" class="bg-white border-t text-center text-xs text-gray-500 p-4 mt-auto">
+ ⚠ This system provides preliminary homeopathic suggestions based on symptoms.
+ Final medicine selection and dosage must be decided by a qualified homeopathic doctor.
 </footer>
 
 <script>
-/* ========== LOGIN ========== */
-function adminLogin(){
- if(adminUser.value==="admin" && adminPass.value==="admin123"){
-  doctorPanel.classList.remove("hidden");
-  alert("Doctor logged in");
- } else alert("Invalid credentials");
+/* ================= LANGUAGE ================= */
+let lang="en";
+function toggleLang(){
+ lang = lang==="en"?"hi":"en";
+ title.innerText = lang==="en"?"Homeopathic Symptom Checker":"होम्योपैथिक लक्षण जांच";
+ symTitle.innerText = lang==="en"?"🔍 Enter Symptoms":"🔍 लक्षण लिखें";
+ patTitle.innerText = lang==="en"?"📝 Patient Details":"📝 रोगी विवरण";
+ compLabel.innerText = lang==="en"?"Complaint":"शिकायत";
+ symptomInput.placeholder = lang==="en"?"Type your symptoms":"अपने लक्षण लिखें या बोलें";
+ pcomplaint.placeholder = lang==="en"?"Describe your main problem":"अपनी मुख्य समस्या बताएं";
+ disclaimer.innerText = lang==="en"
+  ?"⚠ This system provides preliminary homeopathic suggestions based on symptoms. Final medicine selection and dosage must be decided by a qualified homeopathic doctor."
+  :"⚠ यह प्रणाली लक्षणों के आधार पर प्रारंभिक होम्योपैथिक सुझाव देती है। अंतिम दवा और मात्रा योग्य चिकित्सक द्वारा तय की जाएगी।";
 }
 
-/* ========== DOCTOR REPLY PDF ========== */
-function generateReplyPDF(){
+/* ================= VOICE ================= */
+function voiceInput(target){
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SR){alert("Voice not supported");return;}
+ const rec=new SR();
+ rec.lang=lang==="hi"?"hi-IN":"en-IN";
+ rec.start();
+ rec.onresult=e=>{
+  const text=e.results[0][0].transcript;
+  if(target==="symptom") symptomInput.value=text;
+  if(target==="complaint") pcomplaint.value=text;
+ };
+}
+
+/* ================= MEDICINE DATABASE ================= */
+const medicines=[
+{
+ name:"Belladonna",
+ keys:["fever","heat","throbbing","headache"],
+ keynotes:["Sudden onset","High fever","Red face","Throbbing pain"]
+},
+{
+ name:"Aconitum Napellus",
+ keys:["fear","cold","sudden","anxiety"],
+ keynotes:["Sudden illness","Fear of death","Restlessness","After cold exposure"]
+},
+{
+ name:"Bryonia",
+ keys:["pain","movement","dry","thirst"],
+ keynotes:["Pain worse by motion","Dryness","Better rest","Great thirst"]
+},
+{
+ name:"Rhus Toxicodendron",
+ keys:["joint","stiff","rest","motion"],
+ keynotes:["Stiffness after rest","Better by motion","Restlessness","Sprain pains"]
+},
+{
+ name:"Arsenicum Album",
+ keys:["burning","weak","anxiety","restless"],
+ keynotes:["Burning pains","Great weakness","Anxiety","Fastidious"]
+},
+{
+ name:"Pulsatilla",
+ keys:["cold","yellow","changeable","weeping"],
+ keynotes:["Changeable symptoms","Mild disposition","Yellow discharge","Better open air"]
+}
+];
+
+let suggested=[];
+
+/* ================= SEARCH ================= */
+function searchMedicine(){
+ const text=symptomInput.value.toLowerCase();
+ medicineResult.innerHTML="";
+ suggested=[];
+
+ medicines.forEach(m=>{
+  let matched=[];
+  m.keys.forEach(k=>{ if(text.includes(k)) matched.push(k); });
+  if(matched.length){
+   suggested.push({...m,matched});
+  }
+ });
+
+ suggested.sort((a,b)=>b.matched.length-a.matched.length);
+
+ suggested.forEach((m,i)=>{
+  medicineResult.innerHTML+=`
+   <div class="card">
+    <b>${i+1}. ${m.name}</b><br>
+    <span class="text-sm text-gray-600">
+     Matched symptoms: ${m.matched.join(", ")}
+    </span>
+
+    <div class="mt-2">
+     <b class="text-sm">Key-note Symptoms:</b><br>
+     ${m.keynotes.map(k=>`<span class="badge">${k}</span>`).join("")}
+    </div>
+   </div>
+  `;
+ });
+}
+
+/* ================= SUBMIT CASE (PDF) ================= */
+function submitCase(){
  const {jsPDF}=window.jspdf;
  const doc=new jsPDF();
  let y=20;
 
  doc.setFontSize(16);
- doc.text("Doctor Reply / Prescription",20,y); y+=12;
+ doc.text("Patient Case Submission",20,y); y+=10;
 
  doc.setFontSize(11);
- doc.text(`Patient Name: ${rp_name.value}`,20,y); y+=6;
- doc.text(`Mobile: ${rp_mobile.value}`,20,y); y+=8;
+ doc.text(`Name: ${pname.value}`,20,y); y+=6;
+ doc.text(`Age: ${page.value}`,20,y); y+=6;
+ doc.text(`Mobile: ${pmobile.value}`,20,y); y+=6;
+ doc.text(`Address: ${paddress.value}`,20,y); y+=8;
 
- doc.text(`Medicine: ${rp_medicine.value}`,20,y); y+=6;
- doc.text(`Potency: ${rp_potency.value}`,20,y); y+=6;
- doc.text(`Dosage: ${rp_dosage.value}`,20,y); y+=8;
+ doc.text("Symptoms:",20,y); y+=6;
+ doc.text(symptomInput.value,20,y); y+=8;
 
- doc.text("Doctor Advice:",20,y); y+=6;
- doc.text(rp_advice.value,20,y); y+=10;
+ doc.text("Complaint:",20,y); y+=6;
+ doc.text(pcomplaint.value,20,y); y+=8;
 
- doc.setFontSize(9);
- doc.text("Issued by qualified homeopathic physician.",20,280);
+ doc.text("Suggested Medicines (for doctor review):",20,y); y+=6;
+ suggested.forEach((m,i)=>{
+  doc.text(`${i+1}. ${m.name}`,25,y);
+  y+=6;
+ });
 
- doc.save(`Doctor_Reply_${Date.now()}.pdf`);
-}
-
-/* ========== WHATSAPP ========== */
-function sendWhatsApp(){
- const msg =
-`Hello ${rp_name.value},
-Your homeopathic prescription is ready.
-
-Medicine: ${rp_medicine.value}
-Potency: ${rp_potency.value}
-Dosage: ${rp_dosage.value}
-
-Please check the PDF sent by doctor.`;
-
- const url = `https://wa.me/91${rp_mobile.value}?text=${encodeURIComponent(msg)}`;
- window.open(url,"_blank");
-}
-
-/* ========== SMS ========== */
-function sendSMS(){
- const msg =
-`Prescription Ready:
-${rp_medicine.value} ${rp_potency.value}
-${rp_dosage.value}
-
-- Doctor`;
-
- window.location.href = `sms:${rp_mobile.value}?body=${encodeURIComponent(msg)}`;
+ doc.save(`Patient_Case_${Date.now()}.pdf`);
+ alert("Your case has been submitted to doctor for final medicine selection.");
 }
 </script>
 
