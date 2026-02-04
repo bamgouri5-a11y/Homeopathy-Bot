@@ -1,162 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Dr. Bhavna – Homeopathy Consultation System</title>
+
+  <!-- Tailwind CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="assets/logo.png">
+
+  <style>
+    body { background:#eef4fb; }
+
+    .header{
+      background:#fff;
+      padding:14px;
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:center;
+      box-shadow:0 2px 10px rgba(0,0,0,.08)
+    }
+
+    .header img{
+      width:48px;
+      height:48px;
+      border-radius:12px;
+      object-fit:cover;
+      box-shadow:0 2px 6px rgba(0,0,0,0.15);
+    }
+
+    .chat{
+      height:62vh;
+      overflow-y:auto;
+      padding:16px;
+    }
+
+    .row{
+      display:flex;
+      gap:10px;
+      margin-bottom:12px;
+      max-width:85%;
+    }
+
+    .bot{ align-self:flex-start; }
+    .user{ align-self:flex-end; margin-left:auto; }
+
+    .bubble{
+      padding:10px 14px;
+      border-radius:14px;
+      font-size:14px;
+      line-height:1.4;
+    }
+
+    .bot .bubble{
+      background:#ffffff;
+      box-shadow:0 2px 6px rgba(0,0,0,.08);
+    }
+
+    .user .bubble{
+      background:#1e88e5;
+      color:#fff;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <img id="appLogo" src="assets/logo.png" alt="Dr Bhavna Logo">
+  <div>
+    <h1 class="text-lg font-semibold text-gray-800">Dr. Bhavna</h1>
+    <p class="text-sm text-gray-500">Homeopathy Consultation System</p>
+  </div>
+</div>
+
+<!-- CHAT AREA -->
+<div id="chat" class="chat">
+  <div class="row bot">
+    <div class="bubble">
+      👩‍⚕️ Welcome! I am Dr. Bhavna.<br>
+      Please tell me your symptoms.
+    </div>
+  </div>
+</div>
+
+<!-- INPUT -->
+<div class="p-4 bg-white flex gap-2">
+  <input id="msg"
+         type="text"
+         placeholder="Type your symptoms..."
+         class="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+
+  <button onclick="send()"
+          class="bg-blue-600 text-white px-4 py-2 rounded-lg">
+    Send
+  </button>
+</div>
+
+<!-- SCRIPT -->
 <script>
-/* ================= ADMIN CONFIG ================= */
-const ADMIN_LOGIN="Bhavna";
-const ADMIN_PASSWORD="Bhavna@123";
-let admin=false;
+  const chat = document.getElementById("chat");
+  const msg  = document.getElementById("msg");
 
-/* ================= HASH ================= */
-async function hash(t){
- const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t));
- return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");
-}
-let storedHash="";
-(async()=>storedHash=await hash(ADMIN_PASSWORD))();
+  function add(type,text){
+    const row = document.createElement("div");
+    row.className = "row " + type;
 
-/* ================= DATA ================= */
-let patients=[];
+    const bubble = document.createElement("div");
+    bubble.className = "bubble";
+    bubble.innerHTML = text;
 
-/* ===== MEDICINE DATABASE (FIXED & WORKING) ===== */
-const medicines=[
-{
- name:"Belladonna",
- keywords:["fever","bukhar","headache","sir","throbbing","lal","sudden"],
- symptoms:"Sudden fever, throbbing headache, red hot face.",
- keynotes:"Sudden onset, heat, congestion, worse light & noise.",
- potency:"30C"
-},
-{
- name:"Nux Vomica",
- keywords:["constipation","kabz","gas","irritable","gussa","indigestion"],
- symptoms:"Constipation with frequent urging, gastric irritation.",
- keynotes:"Overworked, irritable, chilly patient.",
- potency:"30C"
-},
-{
- name:"Pulsatilla",
- keywords:["cold","jukam","yellow","peela","cough","changeable"],
- symptoms:"Thick yellow bland discharge, mild fever.",
- keynotes:"Better open air, worse heat.",
- potency:"30C"
-},
-{
- name:"Arnica",
- keywords:["injury","chot","bruise","lagna","trauma"],
- symptoms:"Soreness as if beaten, after injury.",
- keynotes:"Says nothing is wrong, fear of touch.",
- potency:"200C"
-},
-{
- name:"Bryonia",
- keywords:["dry","sookha","pain","movement","hilne","thirst"],
- symptoms:"Dry cough, pain worse slightest motion.",
- keynotes:"Better rest, wants quiet.",
- potency:"30C"
-},
-{
- name:"Rhus Tox",
- keywords:["stiff","akad","joint","jor","better motion","restless"],
- symptoms:"Joint stiffness, better by motion.",
- keynotes:"Restlessness, worse damp weather.",
- potency:"30C"
-},
-{
- name:"Sulphur",
- keywords:["burning","jalan","heat","garmi","chronic","skin"],
- symptoms:"Burning sensations, heat in feet.",
- keynotes:"Heat, chronic complaints.",
- potency:"200C"
-},
-{
- name:"Calcarea Carbonica",
- keywords:["weak","kamzori","sweating","pasina","cold","anxiety"],
- symptoms:"Weakness, head sweating, cold sensitivity.",
- keynotes:"Chilly, slow, anxious.",
- potency:"30C"
-}
-];
+    row.appendChild(bubble);
+    chat.appendChild(row);
+    chat.scrollTop = chat.scrollHeight;
+  }
 
-/* ================= CHAT ================= */
-const chat=document.getElementById("chat");
-const msg=document.getElementById("msg");
+  function send(){
+    if(!msg.value.trim()) return;
 
-function add(type,text){
- const r=document.createElement("div");
- r.className="row "+type;
- const a=document.createElement("div");
- a.className="avatar "+(type==="bot"?"botA":"userA");
- a.innerText=type==="bot"?"Dr":"You";
- const b=document.createElement("div");
- b.className="bubble";
- b.innerText=text;
- r.append(a,b);
- chat.appendChild(r);
- chat.scrollTop=chat.scrollHeight;
-}
+    add("user", msg.value);
+    setTimeout(()=>{
+      add("bot","🩺 Thank you. I am analyzing your symptoms.");
+    },500);
 
-/* GREETING */
-add("bot",
-"🙏 स्वागत है Dr. Bhavna के Homeopathy सिस्टम में।\n\n" +
-"आप अपने लक्षण हिन्दी या English में लिखें या 🎤 से बोलें।\n" +
-"दर्द की जगह, प्रकार, और बढ़ने-घटने की जानकारी दें।"
-);
-
-/* ================= MIC (HINDI) ================= */
-const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-if(SR){
- const r=new SR();
- r.lang="hi-IN";
- mic.onclick=()=>r.start();
- r.onresult=e=>msg.value=e.results[0][0].transcript;
-}
-
-/* ================= ASK (FIXED) ================= */
-ask.onclick=()=>{
- if(!msg.value.trim()) return;
-
- const text=msg.value.toLowerCase();
- msg.value="";
- add("user",text);
-
- const results=medicines.map(m=>{
-  let score=0;
-  m.keywords.forEach(k=>{
-   if(text.includes(k)) score++;
-  });
-  return {...m,score};
- }).filter(m=>m.score>0)
-   .sort((a,b)=>b.score-a.score)
-   .slice(0,2);
-
- if(!results.length){
-  add("bot","लक्षणों के अनुसार कोई स्पष्ट दवा नहीं मिली। कृपया व्यक्तिगत परामर्श लें।");
-  return;
- }
-
- results.forEach(m=>{
-  add("bot",
-   `${m.name}\n`+
-   `Symptoms: ${m.symptoms}\n`+
-   `Keynotes: ${m.keynotes}\n`+
-   (admin ? `Potency: ${m.potency}` : "Potency doctor द्वारा तय की जाएगी")
-  );
- });
-};
-
-/* CLEAR */
-clear.onclick=()=>chat.innerHTML="";
-
-/* ================= ADMIN LOGIN ================= */
-async function adminLogin(){
- if(adminUser.value!==ADMIN_LOGIN){
-  alert("Invalid login"); return;
- }
- const h=await hash(adminPass.value);
- if(h===storedHash){
-  admin=true;
-  adminPanel.classList.remove("hidden");
-  alert("Admin logged in");
- }else{
-  alert("Wrong password");
- }
-}
+    msg.value="";
+  }
 </script>
+
+</body>
+</html>
