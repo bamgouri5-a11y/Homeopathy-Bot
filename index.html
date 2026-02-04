@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dr. Bhavna – Homeopathy System</title>
+
+<title>🌿 Dr. Bhavna Homeopathy System</title>
 
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 
@@ -11,132 +12,188 @@
 body{background:#eef4fb}
 .card{
  background:#f8fafc;
- border-left:4px solid #2563eb;
+ border-left:5px solid #2563eb;
  padding:12px;
- border-radius:8px;
- margin-top:10px
+ border-radius:10px;
+ margin-top:12px
+}
+.logo{
+ width:45px;height:45px;
+ border-radius:50%;
+ background:linear-gradient(135deg,#2563eb,#16a34a);
+ color:white;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ font-weight:bold;
+ font-size:20px;
 }
 </style>
 </head>
 
-<body class="min-h-screen">
+<body class="min-h-screen flex flex-col">
 
 <!-- HEADER -->
-<div class="bg-white p-4 shadow text-center">
-  <h1 class="text-xl font-bold text-blue-700">
-    Dr. Bhavna – Homeopathy Consultation
+<header class="bg-white shadow p-4 flex items-center justify-center gap-3">
+  <div class="logo">HB</div>
+  <h1 class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-green-600">
+    Dr. Bhavna Homeopathy System
   </h1>
-  <p class="text-xs text-gray-500 mt-1">
-    Educational support only. Final prescription by qualified physician.
-  </p>
-</div>
+</header>
 
-<!-- SEARCH BOX -->
-<div class="max-w-3xl mx-auto mt-6 bg-white p-4 rounded shadow">
-  <h3 class="font-bold mb-2">Search Medicine by Symptoms</h3>
+<!-- SEARCH SECTION -->
+<section class="max-w-3xl mx-auto mt-6 bg-white p-5 rounded shadow">
+  <h2 class="font-bold text-lg mb-2">🔍 Search Medicine by Symptoms</h2>
 
-  <input id="symptomInput"
-    class="border p-2 w-full rounded mb-2"
-    placeholder="Enter symptoms (fever headache anxiety etc.)">
+  <div class="flex gap-2">
+    <input id="symptomInput" class="border p-2 w-full rounded"
+     placeholder="Type symptoms or use mic (fever headache anxiety)">
+    <button onclick="voiceSearch()" class="bg-green-600 text-white px-3 rounded">🎤</button>
+  </div>
 
-  <button onclick="searchMedicine()"
-    class="bg-blue-600 text-white px-4 py-2 rounded w-full">
-    Search
+  <button onclick="searchMedicine()" class="mt-3 bg-blue-600 text-white py-2 rounded w-full">
+    Search Medicine
   </button>
 
-  <div id="medicineResult" class="mt-2"></div>
-</div>
+  <div id="medicineResult"></div>
+
+  <h3 class="font-semibold mt-4">🕘 Search History</h3>
+  <ul id="history" class="text-sm text-gray-700 list-disc ml-5"></ul>
+</section>
+
+<!-- APPOINTMENT FORM -->
+<section class="max-w-3xl mx-auto mt-6 bg-white p-5 rounded shadow">
+  <h2 class="font-bold text-lg mb-2">📝 Patient Appointment</h2>
+
+  <input id="pname" class="border p-2 w-full mb-2 rounded" placeholder="Patient Name">
+  <input id="page" class="border p-2 w-full mb-2 rounded" placeholder="Age">
+  <input id="pmobile" class="border p-2 w-full mb-2 rounded" placeholder="Mobile Number">
+  <textarea id="pcomplaint" class="border p-2 w-full mb-2 rounded"
+   placeholder="Main Complaint"></textarea>
+
+  <button onclick="saveAppointment()" class="bg-green-600 text-white py-2 rounded w-full">
+    Submit Appointment
+  </button>
+</section>
+
+<!-- ADMIN LOGIN -->
+<section class="max-w-3xl mx-auto mt-6 bg-gray-100 p-5 rounded shadow">
+  <h2 class="font-bold text-lg text-red-600 mb-2">🔐 Admin Login</h2>
+
+  <input id="adminUser" class="border p-2 w-full mb-2 rounded" placeholder="Username">
+  <input id="adminPass" type="password" class="border p-2 w-full mb-2 rounded" placeholder="Password">
+
+  <button onclick="adminLogin()" class="bg-red-600 text-white py-2 rounded w-full">
+    Login
+  </button>
+</section>
+
+<!-- ADMIN PANEL -->
+<section id="adminPanel" class="max-w-3xl mx-auto mt-6 bg-white p-5 rounded shadow hidden">
+  <button onclick="downloadCSV()" class="bg-blue-700 text-white py-2 rounded w-full">
+    Download Appointments CSV
+  </button>
+</section>
+
+<!-- FOOTER DISCLAIMER -->
+<footer class="mt-auto bg-white text-center text-xs text-gray-500 p-4">
+  ⚠ Disclaimer: This system is for educational and clinical support only.
+  Final diagnosis and prescription must be done by a qualified homeopathic physician.
+</footer>
 
 <script>
-/* ================= MEDICINE DATABASE ================= */
-const medicines = [
-{
- name:"Belladonna",
- keywords:["fever","headache","throbbing","heat","red"],
- symptoms:"Sudden fever with throbbing headache",
- keynotes:"Sudden onset, red face"
-},
-{
- name:"Aconitum Napellus",
- keywords:["fever","cold","fear","anxiety","sudden"],
- symptoms:"Sudden fever after cold exposure",
- keynotes:"Anxiety, restlessness"
-},
-{
- name:"Bryonia",
- keywords:["pain","movement","dry","thirst"],
- symptoms:"Pain worse by movement",
- keynotes:"Better rest"
-},
-{
- name:"Rhus Toxicodendron",
- keywords:["joint","stiff","movement","restless"],
- symptoms:"Joint stiffness better by movement",
- keynotes:"Restlessness"
-},
-{
- name:"Nux Vomica",
- keywords:["constipation","gas","indigestion","irritable"],
- symptoms:"Digestive trouble with irritability",
- keynotes:"Overworked"
-},
-{
- name:"Pulsatilla",
- keywords:["cold","cough","yellow","changeable"],
- symptoms:"Cold with yellow discharge",
- keynotes:"Better open air"
-},
-{
- name:"Gelsemium",
- keywords:["fever","weak","chills","dull"],
- symptoms:"Fever with weakness",
- keynotes:"Dull, drowsy"
-},
-{
- name:"Arsenicum Album",
- keywords:["burning","weak","anxiety","restless"],
- symptoms:"Burning pains with weakness",
- keynotes:"Anxiety, fastidious"
-}
+/* ================= MEDICINES ================= */
+const medicines=[
+ {name:"Belladonna",keywords:["fever","headache","throbbing","heat"],symptoms:"Sudden fever",keynotes:"Red face"},
+ {name:"Aconitum",keywords:["fever","cold","fear","sudden"],symptoms:"Sudden fever after cold",keynotes:"Anxiety"},
+ {name:"Bryonia",keywords:["pain","movement","dry"],symptoms:"Pain worse movement",keynotes:"Better rest"},
+ {name:"Rhus Tox",keywords:["joint","stiff","movement"],symptoms:"Stiff better motion",keynotes:"Restless"},
+ {name:"Nux Vomica",keywords:["gas","constipation","irritable"],symptoms:"Digestive trouble",keynotes:"Overworked"},
+ {name:"Pulsatilla",keywords:["cold","yellow","changeable"],symptoms:"Cold yellow discharge",keynotes:"Open air"},
+ {name:"Gelsemium",keywords:["weak","fever","dull"],symptoms:"Weakness with fever",keynotes:"Dull"},
+ {name:"Arsenicum",keywords:["burning","weak","anxiety"],symptoms:"Burning pains",keynotes:"Anxiety"}
 ];
 
-/* ================= SEARCH FUNCTION ================= */
+/* ================= SEARCH ================= */
+let history = JSON.parse(localStorage.getItem("history")) || [];
 function searchMedicine(){
- const text = document.getElementById("symptomInput").value.toLowerCase();
- const box = document.getElementById("medicineResult");
- box.innerHTML = "";
+ const text=symptomInput.value.toLowerCase();
+ if(!text) return;
+ history.unshift(text);
+ history=history.slice(0,5);
+ localStorage.setItem("history",JSON.stringify(history));
+ renderHistory();
 
- if(!text){
-   box.innerHTML="<p class='text-red-600'>Please enter symptoms.</p>";
-   return;
- }
+ const results=medicines.map(m=>{
+  let score=0;
+  m.keywords.forEach(k=>{if(text.includes(k))score++});
+  return {...m,score};
+ }).sort((a,b)=>b.score-a.score).slice(0,5);
 
- const results = medicines
-  .map(m => {
-    let score = 0;
-    m.keywords.forEach(k => {
-      if(text.includes(k)) score++;
-    });
-    return {...m, score};
-  })
-  .sort((a,b) => b.score - a.score)
-  .slice(0,5);   // 🔑 TOP 5 SIMILAR
-
- if(results.every(r => r.score === 0)){
-   box.innerHTML="<p class='text-red-600'>No close match found.</p>";
-   return;
- }
-
+ medicineResult.innerHTML="";
  results.forEach((m,i)=>{
-   box.innerHTML += `
-    <div class="card">
-      <b>${i+1}. ${m.name}</b>
-      <span class="text-sm text-blue-600"> (Similarity: ${m.score})</span><br>
-      <b>Indication:</b> ${m.symptoms}<br>
-      <b>Keynotes:</b> ${m.keynotes}
-    </div>
-   `;
+  medicineResult.innerHTML+=`
+   <div class="card">
+    <b>${i+1}. ${m.name}</b>
+    <span class="text-blue-600"> (Similarity: ${m.score})</span><br>
+    <b>Indication:</b> ${m.symptoms}<br>
+    <b>Keynotes:</b> ${m.keynotes}
+   </div>`;
  });
+}
+
+function renderHistory(){
+ historyEl.innerHTML="";
+ history.forEach(h=>{
+  historyEl.innerHTML+=`<li>${h}</li>`;
+ });
+}
+const historyEl=document.getElementById("history");
+renderHistory();
+
+/* ================= VOICE SEARCH ================= */
+function voiceSearch(){
+ const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SpeechRecognition){alert("Voice not supported");return;}
+ const rec=new SpeechRecognition();
+ rec.lang="en-IN";
+ rec.start();
+ rec.onresult=e=>{
+  symptomInput.value=e.results[0][0].transcript;
+  searchMedicine();
+ };
+}
+
+/* ================= APPOINTMENT ================= */
+let appointments=JSON.parse(localStorage.getItem("appointments"))||[];
+function saveAppointment(){
+ appointments.push({
+  name:pname.value,
+  age:page.value,
+  mobile:pmobile.value,
+  complaint:pcomplaint.value,
+  date:new Date().toLocaleString()
+ });
+ localStorage.setItem("appointments",JSON.stringify(appointments));
+ alert("Appointment saved");
+ pname.value=page.value=pmobile.value=pcomplaint.value="";
+}
+
+/* ================= ADMIN ================= */
+function adminLogin(){
+ if(adminUser.value==="admin" && adminPass.value==="admin123"){
+  adminPanel.classList.remove("hidden");
+ } else alert("Invalid credentials");
+}
+function downloadCSV(){
+ let csv="Name,Age,Mobile,Complaint,Date\n";
+ appointments.forEach(a=>{
+  csv+=`${a.name},${a.age},${a.mobile},"${a.complaint}",${a.date}\n`;
+ });
+ const link=document.createElement("a");
+ link.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+ link.download="appointments.csv";
+ link.click();
 }
 </script>
 
