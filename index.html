@@ -3,13 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dr. Bhavna – Appointment System</title>
+<title>Dr. Bhavna – Homeopathy System</title>
 
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.3/dist/tailwind.min.css" rel="stylesheet"/>
 
 <style>
 body{background:#eef4fb}
 .hidden{display:none}
+.card{
+  background:#f8fafc;
+  border-left:4px solid #2563eb;
+  padding:10px;
+  border-radius:8px;
+  margin-top:10px
+}
 </style>
 </head>
 
@@ -18,18 +25,27 @@ body{background:#eef4fb}
 <!-- HEADER -->
 <div class="bg-white p-4 shadow text-center">
   <h1 class="text-xl font-bold text-blue-700">
-    Dr. Bhavna – Homeopathy Appointment System
+    Dr. Bhavna – Homeopathy Consultation
   </h1>
-  <p class="text-xs text-gray-500">
-    Patient Complaint Registration
-  </p>
 </div>
 
-<!-- APPOINTMENT FORM -->
+<!-- SYMPTOM SEARCH -->
 <div class="max-w-3xl mx-auto mt-6 bg-white p-4 rounded shadow">
-  <h3 class="font-bold text-gray-700 mb-3">
-    Patient Appointment / Complaint Form
-  </h3>
+  <h3 class="font-bold mb-2">Search Medicine by Symptoms</h3>
+  <input id="symptomInput"
+    class="border p-2 w-full rounded mb-2"
+    placeholder="लक्षण लिखें / Describe symptoms">
+  <button onclick="searchMedicine()"
+    class="bg-blue-600 text-white px-4 py-2 rounded w-full">
+    Search Medicine
+  </button>
+
+  <div id="medicineResult"></div>
+</div>
+
+<!-- APPOINTMENT FORM (YOUR ORIGINAL) -->
+<div class="max-w-3xl mx-auto mt-6 bg-white p-4 rounded shadow">
+  <h3 class="font-bold mb-3">Patient Appointment / Complaint</h3>
 
   <input id="pname" class="border p-2 w-full mb-2 rounded" placeholder="Patient Name">
   <input id="page" class="border p-2 w-full mb-2 rounded" placeholder="Age">
@@ -41,109 +57,134 @@ body{background:#eef4fb}
     class="bg-green-600 text-white px-4 py-2 rounded w-full">
     Submit Appointment
   </button>
-
-  <p id="successMsg" class="text-green-600 text-sm mt-2 hidden">
-    ✔ Appointment saved successfully
-  </p>
 </div>
 
 <!-- ADMIN LOGIN -->
 <div class="max-w-3xl mx-auto mt-6 bg-gray-100 p-4 rounded shadow">
   <h3 class="font-bold text-red-700 mb-2">Admin Login</h3>
-
-  <input id="adminUser" class="border p-2 w-full mb-2 rounded"
-    placeholder="Username">
-  <input id="adminPass" type="password"
-    class="border p-2 w-full mb-2 rounded"
-    placeholder="Password">
-
-  <button onclick="adminLogin()"
-    class="bg-red-600 text-white px-4 py-2 rounded w-full">
+  <input id="adminUser" class="border p-2 w-full mb-2 rounded" placeholder="Username">
+  <input id="adminPass" type="password" class="border p-2 w-full mb-2 rounded" placeholder="Password">
+  <button onclick="adminLogin()" class="bg-red-600 text-white px-4 py-2 rounded w-full">
     Login
   </button>
 </div>
 
 <!-- ADMIN PANEL -->
-<div id="adminPanel"
-  class="max-w-3xl mx-auto mt-6 bg-white p-4 rounded shadow hidden">
-
-  <h3 class="font-bold text-gray-700 mb-2">
-    Admin Panel
-  </h3>
-
-  <button onclick="downloadCSV()"
-    class="bg-blue-600 text-white px-4 py-2 rounded w-full">
+<div id="adminPanel" class="max-w-3xl mx-auto mt-6 bg-white p-4 rounded shadow hidden">
+  <button onclick="downloadCSV()" class="bg-blue-600 text-white px-4 py-2 rounded w-full">
     Download Patient Complaints (CSV)
   </button>
 </div>
 
-<!-- FOOTER -->
-<footer class="mt-auto bg-white p-4 text-center text-xs text-gray-600">
-  This system stores data locally in browser for demonstration purposes only.
-</footer>
-
 <script>
-/* ================= DATA STORAGE ================= */
+/* ================= MEDICINE DATABASE ================= */
+const medicines=[
+{
+ name:"Belladonna",
+ keywords:["fever","bukhar","headache","sir","throbbing"],
+ symptoms:"Sudden fever with throbbing headache",
+ keynotes:"Sudden onset, heat, red face"
+},
+{
+ name:"Nux Vomica",
+ keywords:["constipation","kabz","gas","indigestion"],
+ symptoms:"Constipation with gastric trouble",
+ keynotes:"Irritable, overworked"
+},
+{
+ name:"Pulsatilla",
+ keywords:["cold","jukam","yellow","peela"],
+ symptoms:"Cold with yellow discharge",
+ keynotes:"Better open air"
+},
+{
+ name:"Arnica",
+ keywords:["injury","chot","bruise"],
+ symptoms:"Soreness after injury",
+ keynotes:"Feels beaten"
+},
+{
+ name:"Bryonia",
+ keywords:["dry","pain","movement"],
+ symptoms:"Pain worse by movement",
+ keynotes:"Better rest"
+},
+{
+ name:"Rhus Toxicodendron",
+ keywords:["joint","akad","stiff"],
+ symptoms:"Joint stiffness better by movement",
+ keynotes:"Restless"
+},
+{
+ name:"Sulphur",
+ keywords:["burning","jalan","heat"],
+ symptoms:"Burning sensations",
+ keynotes:"Heat, chronic"
+},
+{
+ name:"Calcarea Carbonica",
+ keywords:["weak","kamzori","sweating"],
+ symptoms:"Weakness with sweating",
+ keynotes:"Chilly patient"
+}
+];
+
+/* ================= MEDICINE SEARCH ================= */
+function searchMedicine(){
+ const text=document.getElementById("symptomInput").value.toLowerCase();
+ const box=document.getElementById("medicineResult");
+ box.innerHTML="";
+
+ const results=medicines.filter(m =>
+   m.keywords.some(k => text.includes(k))
+ );
+
+ if(!results.length){
+   box.innerHTML="<p class='text-red-600 mt-2'>No medicine found. Consult doctor.</p>";
+   return;
+ }
+
+ results.forEach(m=>{
+   box.innerHTML+=`
+     <div class="card">
+       <b>${m.name}</b><br>
+       Symptoms: ${m.symptoms}<br>
+       Keynotes: ${m.keynotes}
+     </div>
+   `;
+ });
+}
+
+/* ================= APPOINTMENT ================= */
 let complaints=[];
-
-/* ================= SAVE APPOINTMENT ================= */
 function saveComplaint(){
-  const name=document.getElementById("pname").value;
-  const age=document.getElementById("page").value;
-  const mobile=document.getElementById("pmobile").value;
-  const complaint=document.getElementById("pcomplaint").value;
-
-  if(!name||!mobile||!complaint){
-    alert("Please fill required fields");
-    return;
-  }
-
-  complaints.push({
-    name,age,mobile,complaint,
-    date:new Date().toLocaleString()
-  });
-
-  document.getElementById("successMsg").classList.remove("hidden");
-
-  document.getElementById("pname").value="";
-  document.getElementById("page").value="";
-  document.getElementById("pmobile").value="";
-  document.getElementById("pcomplaint").value="";
+ complaints.push({
+  name:pname.value,
+  age:page.value,
+  mobile:pmobile.value,
+  complaint:pcomplaint.value,
+  date:new Date().toLocaleString()
+ });
+ alert("Appointment saved");
+ pname.value=page.value=pmobile.value=pcomplaint.value="";
 }
 
-/* ================= ADMIN LOGIN ================= */
+/* ================= ADMIN ================= */
 function adminLogin(){
-  const u=document.getElementById("adminUser").value;
-  const p=document.getElementById("adminPass").value;
-
-  if(u==="admin" && p==="admin123"){
-    document.getElementById("adminPanel").classList.remove("hidden");
-    alert("Admin login successful");
-  }else{
-    alert("Invalid admin credentials");
-  }
+ if(adminUser.value==="admin" && adminPass.value==="admin123"){
+  adminPanel.classList.remove("hidden");
+ }else alert("Invalid admin credentials");
 }
 
-/* ================= CSV DOWNLOAD ================= */
 function downloadCSV(){
-  if(!complaints.length){
-    alert("No patient data available");
-    return;
-  }
-
-  let csv="Name,Age,Mobile,Complaint,Date\n";
-  complaints.forEach(c=>{
-    csv+=`${c.name},${c.age},${c.mobile},"${c.complaint}",${c.date}\n`;
-  });
-
-  const blob=new Blob([csv],{type:"text/csv"});
-  const url=URL.createObjectURL(blob);
-
-  const a=document.createElement("a");
-  a.href=url;
-  a.download="patient_complaints.csv";
-  a.click();
-  URL.revokeObjectURL(url);
+ let csv="Name,Age,Mobile,Complaint,Date\n";
+ complaints.forEach(c=>{
+  csv+=`${c.name},${c.age},${c.mobile},"${c.complaint}",${c.date}\n`;
+ });
+ const a=document.createElement("a");
+ a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+ a.download="patients.csv";
+ a.click();
 }
 </script>
 
