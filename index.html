@@ -1,211 +1,162 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dr. Bhavna – Homeopathy Clinical System</title>
-
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-
-<style>
-body{background:#eef4fb}
-.chat{height:35vh;overflow-y:auto}
-.row{display:flex;gap:10px;margin-bottom:12px;max-width:85%}
-.bot{align-self:flex-start}
-.user{align-self:flex-end;flex-direction:row-reverse}
-.avatar{
- width:38px;height:38px;border-radius:50%;
- display:flex;align-items:center;justify-content:center;
- font-weight:bold;color:#fff
-}
-.botA{background:#16a34a}
-.userA{background:#2563eb}
-.bubble{background:#fff;padding:12px;border-radius:14px;font-size:14px}
-.hidden{display:none}
-</style>
-</head>
-
-<body class="min-h-screen flex flex-col">
-
-<!-- HEADER -->
-<div class="bg-white shadow p-4">
-  <div class="max-w-4xl mx-auto flex items-center gap-3 justify-center">
-    <img src="doctor-logo.png" class="w-12 h-12 rounded-full border" alt="Doctor Logo">
-    <div>
-      <h1 class="text-xl font-bold text-blue-700">
-        Dr. Bhavna – Homeopathy Consultation System
-      </h1>
-      <p class="text-xs text-gray-500">
-        Classical Homeopathy • Patient Record Management
-      </p>
-    </div>
-  </div>
-</div>
-
-<!-- CHAT -->
-<div id="chat" class="chat max-w-4xl mx-auto p-4 flex flex-col"></div>
-
-<!-- CHAT INPUT -->
-<div class="bg-white p-4 shadow max-w-4xl mx-auto w-full">
-  <input id="msg" class="border rounded w-full px-3 py-2 mb-2"
-    placeholder="लक्षण लिखें / Type symptoms (Hindi / English)">
-  <button onclick="askBot()" class="bg-blue-600 text-white px-4 py-2 rounded w-full">
-    Ask Doctor
-  </button>
-</div>
-
-<!-- PATIENT FORM -->
-<div class="max-w-4xl mx-auto mt-4 bg-white p-4 rounded shadow">
-<h3 class="font-bold mb-2">Patient Complaint</h3>
-<input id="pname" class="border p-2 w-full mb-2 rounded" placeholder="Name">
-<input id="pmobile" class="border p-2 w-full mb-2 rounded" placeholder="Mobile">
-<input id="page" class="border p-2 w-full mb-2 rounded" placeholder="Age">
-<textarea id="paddress" class="border p-2 w-full mb-2 rounded" placeholder="Address"></textarea>
-<textarea id="pcomplaint" class="border p-2 w-full mb-2 rounded" placeholder="Complaint"></textarea>
-<button onclick="savePatient()" class="bg-green-600 text-white px-4 py-2 rounded w-full">
-Save Patient
-</button>
-</div>
-
-<!-- ADMIN LOGIN -->
-<div class="max-w-4xl mx-auto mt-4 bg-gray-100 p-4 rounded shadow">
-<h3 class="font-bold text-red-700 mb-2">Admin Login</h3>
-<input id="adminUser" class="border p-2 w-full mb-2 rounded" placeholder="Username">
-<input id="adminPass" type="password" class="border p-2 w-full mb-2 rounded" placeholder="Password">
-<button onclick="adminLogin()" class="bg-red-600 text-white px-4 py-2 rounded w-full">
-Login
-</button>
-</div>
-
-<!-- ADMIN PANEL -->
-<div id="adminPanel" class="hidden max-w-4xl mx-auto mt-4 bg-white p-4 rounded shadow">
-<h3 class="font-bold mb-3">Admin Panel</h3>
-
-<!-- CSV UPLOAD -->
-<label class="block font-semibold mb-1">Upload Patient CSV</label>
-<input type="file" accept=".csv" onchange="uploadCSV(this)"
-  class="border p-2 w-full mb-3 rounded">
-
-<!-- CSV DOWNLOAD -->
-<button onclick="downloadCSV()" class="bg-blue-600 text-white px-4 py-2 rounded w-full">
-Download All Patients CSV
-</button>
-</div>
-
-<footer class="mt-auto bg-white p-3 text-center text-xs text-gray-600">
-<strong>Disclaimer:</strong> For clinical reference only
-</footer>
-
 <script>
+/* ================= ADMIN CONFIG ================= */
+const ADMIN_LOGIN="Bhavna";
+const ADMIN_PASSWORD="Bhavna@123";
+let admin=false;
+
+/* ================= HASH ================= */
+async function hash(t){
+ const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t));
+ return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");
+}
+let storedHash="";
+(async()=>storedHash=await hash(ADMIN_PASSWORD))();
+
+/* ================= DATA ================= */
+let patients=[];
+
+/* ===== MEDICINE DATABASE (FIXED & WORKING) ===== */
+const medicines=[
+{
+ name:"Belladonna",
+ keywords:["fever","bukhar","headache","sir","throbbing","lal","sudden"],
+ symptoms:"Sudden fever, throbbing headache, red hot face.",
+ keynotes:"Sudden onset, heat, congestion, worse light & noise.",
+ potency:"30C"
+},
+{
+ name:"Nux Vomica",
+ keywords:["constipation","kabz","gas","irritable","gussa","indigestion"],
+ symptoms:"Constipation with frequent urging, gastric irritation.",
+ keynotes:"Overworked, irritable, chilly patient.",
+ potency:"30C"
+},
+{
+ name:"Pulsatilla",
+ keywords:["cold","jukam","yellow","peela","cough","changeable"],
+ symptoms:"Thick yellow bland discharge, mild fever.",
+ keynotes:"Better open air, worse heat.",
+ potency:"30C"
+},
+{
+ name:"Arnica",
+ keywords:["injury","chot","bruise","lagna","trauma"],
+ symptoms:"Soreness as if beaten, after injury.",
+ keynotes:"Says nothing is wrong, fear of touch.",
+ potency:"200C"
+},
+{
+ name:"Bryonia",
+ keywords:["dry","sookha","pain","movement","hilne","thirst"],
+ symptoms:"Dry cough, pain worse slightest motion.",
+ keynotes:"Better rest, wants quiet.",
+ potency:"30C"
+},
+{
+ name:"Rhus Tox",
+ keywords:["stiff","akad","joint","jor","better motion","restless"],
+ symptoms:"Joint stiffness, better by motion.",
+ keynotes:"Restlessness, worse damp weather.",
+ potency:"30C"
+},
+{
+ name:"Sulphur",
+ keywords:["burning","jalan","heat","garmi","chronic","skin"],
+ symptoms:"Burning sensations, heat in feet.",
+ keynotes:"Heat, chronic complaints.",
+ potency:"200C"
+},
+{
+ name:"Calcarea Carbonica",
+ keywords:["weak","kamzori","sweating","pasina","cold","anxiety"],
+ symptoms:"Weakness, head sweating, cold sensitivity.",
+ keynotes:"Chilly, slow, anxious.",
+ potency:"30C"
+}
+];
+
 /* ================= CHAT ================= */
 const chat=document.getElementById("chat");
-function addMsg(text,type="bot"){
- const row=document.createElement("div");
- row.className=`row ${type}`;
- const av=document.createElement("div");
- av.className=`avatar ${type==="bot"?"botA":"userA"}`;
- av.textContent=type==="bot"?"Dr":"You";
+const msg=document.getElementById("msg");
+
+function add(type,text){
+ const r=document.createElement("div");
+ r.className="row "+type;
+ const a=document.createElement("div");
+ a.className="avatar "+(type==="bot"?"botA":"userA");
+ a.innerText=type==="bot"?"Dr":"You";
  const b=document.createElement("div");
  b.className="bubble";
  b.innerText=text;
- row.append(av,b);
- chat.appendChild(row);
+ r.append(a,b);
+ chat.appendChild(r);
  chat.scrollTop=chat.scrollHeight;
 }
 
-/* ================= MEDICINE ENGINE ================= */
-const remedies=[
- {med:"Aconitum napellus",sym:["fever","cold","जुकाम","ठंड"]},
- {med:"Belladonna",sym:["headache","सिर","दर्द","heat"]},
- {med:"Bryonia alba",sym:["dry","cough","खांसी"]},
- {med:"Arsenicum album",sym:["anxiety","घबराहट","burning"]},
- {med:"Nux vomica",sym:["gas","acidity","कब्ज"]}
-];
+/* GREETING */
+add("bot",
+"🙏 स्वागत है Dr. Bhavna के Homeopathy सिस्टम में।\n\n" +
+"आप अपने लक्षण हिन्दी या English में लिखें या 🎤 से बोलें।\n" +
+"दर्द की जगह, प्रकार, और बढ़ने-घटने की जानकारी दें।"
+);
 
-function getRemedy(t){
- t=t.toLowerCase();
- let best={s:0,m:null};
- remedies.forEach(r=>{
-  let score=0;
-  r.sym.forEach(x=>{if(t.includes(x)) score++;});
-  if(score>best.s) best={s:score,m:r.med};
- });
- return best.s>0
-  ? `Suggested Remedy: ${best.m}\n⚠️ Dose as per physician`
-  : "Clear remedy not found. Case taking needed.";
+/* ================= MIC (HINDI) ================= */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(SR){
+ const r=new SR();
+ r.lang="hi-IN";
+ mic.onclick=()=>r.start();
+ r.onresult=e=>msg.value=e.results[0][0].transcript;
 }
 
-function askBot(){
+/* ================= ASK (FIXED) ================= */
+ask.onclick=()=>{
  if(!msg.value.trim()) return;
- addMsg(msg.value,"user");
- setTimeout(()=>addMsg(getRemedy(msg.value),"bot"),400);
+
+ const text=msg.value.toLowerCase();
  msg.value="";
-}
+ add("user",text);
 
-/* ================= PATIENT STORAGE ================= */
-let patients=[];
-function savePatient(){
- if(!pname.value||!pmobile.value||!page.value||!paddress.value||!pcomplaint.value){
-  alert("Fill all fields"); return;
+ const results=medicines.map(m=>{
+  let score=0;
+  m.keywords.forEach(k=>{
+   if(text.includes(k)) score++;
+  });
+  return {...m,score};
+ }).filter(m=>m.score>0)
+   .sort((a,b)=>b.score-a.score)
+   .slice(0,2);
+
+ if(!results.length){
+  add("bot","लक्षणों के अनुसार कोई स्पष्ट दवा नहीं मिली। कृपया व्यक्तिगत परामर्श लें।");
+  return;
  }
- patients.push({
-  name:pname.value,
-  mobile:pmobile.value,
-  age:page.value,
-  address:paddress.value,
-  complaint:pcomplaint.value,
-  date:new Date().toLocaleString()
- });
- alert("Patient saved");
- pname.value=pmobile.value=page.value=paddress.value=pcomplaint.value="";
-}
 
-/* ================= ADMIN ================= */
-function adminLogin(){
- if(adminUser.value==="admin" && adminPass.value==="admin123"){
+ results.forEach(m=>{
+  add("bot",
+   `${m.name}\n`+
+   `Symptoms: ${m.symptoms}\n`+
+   `Keynotes: ${m.keynotes}\n`+
+   (admin ? `Potency: ${m.potency}` : "Potency doctor द्वारा तय की जाएगी")
+  );
+ });
+};
+
+/* CLEAR */
+clear.onclick=()=>chat.innerHTML="";
+
+/* ================= ADMIN LOGIN ================= */
+async function adminLogin(){
+ if(adminUser.value!==ADMIN_LOGIN){
+  alert("Invalid login"); return;
+ }
+ const h=await hash(adminPass.value);
+ if(h===storedHash){
+  admin=true;
   adminPanel.classList.remove("hidden");
   alert("Admin logged in");
- } else alert("Invalid login");
-}
-
-/* ================= CSV UPLOAD ================= */
-function uploadCSV(input){
- const file=input.files[0];
- if(!file) return;
- const reader=new FileReader();
- reader.onload=e=>{
-  const rows=e.target.result.split("\n").slice(1);
-  rows.forEach(r=>{
-   const c=r.split(",");
-   if(c.length>=5){
-    patients.push({
-     name:c[0],
-     mobile:c[1],
-     age:c[2],
-     address:c[3],
-     complaint:c[4],
-     date:c[5]||"Imported"
-    });
-   }
-  });
-  alert("CSV Imported Successfully");
- };
- reader.readAsText(file);
-}
-
-/* ================= CSV DOWNLOAD ================= */
-function downloadCSV(){
- if(!patients.length){alert("No data");return;}
- let csv="Name,Mobile,Age,Address,Complaint,Date\n";
- patients.forEach(p=>{
-  csv+=`${p.name},${p.mobile},${p.age},"${p.address}","${p.complaint}",${p.date}\n`;
- });
- const a=document.createElement("a");
- a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
- a.download="patient_records.csv";
- a.click();
+ }else{
+  alert("Wrong password");
+ }
 }
 </script>
-
-</body>
-</html>
