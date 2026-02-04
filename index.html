@@ -5,13 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dr. Bhavna – Homeopathy Clinical System</title>
 
-<!-- Tailwind -->
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
 body{background:#eef4fb}
-.chat{height:40vh;overflow-y:auto}
+.chat{height:35vh;overflow-y:auto}
 .row{display:flex;gap:10px;margin-bottom:12px;max-width:85%}
 .bot{align-self:flex-start}
 .user{align-self:flex-end;flex-direction:row-reverse}
@@ -23,6 +21,7 @@ body{background:#eef4fb}
 .botA{background:#16a34a}
 .userA{background:#2563eb}
 .bubble{background:#fff;padding:12px;border-radius:14px;font-size:14px}
+.hidden{display:none}
 </style>
 </head>
 
@@ -31,9 +30,7 @@ body{background:#eef4fb}
 <!-- HEADER -->
 <div class="bg-white shadow p-4">
   <div class="max-w-4xl mx-auto flex items-center gap-3 justify-center">
-    <img src="A_header_section_for_the_&quot;Dr._Bhavna_–_Homeopathy_.png"
-         class="w-12 h-12 rounded-full border"
-         alt="Doctor Logo">
+    <img src="doctor-logo.png" class="w-12 h-12 rounded-full border" alt="Doctor Logo">
     <div>
       <h1 class="text-xl font-bold text-blue-700">
         Dr. Bhavna – Homeopathy Consultation System
@@ -48,41 +45,60 @@ body{background:#eef4fb}
 <!-- CHAT -->
 <div id="chat" class="chat max-w-4xl mx-auto p-4 flex flex-col"></div>
 
-<!-- INPUT -->
+<!-- CHAT INPUT -->
 <div class="bg-white p-4 shadow max-w-4xl mx-auto w-full">
   <input id="msg" class="border rounded w-full px-3 py-2 mb-2"
-         placeholder="लक्षण लिखें / Type symptoms (Hindi or English)">
-  <div class="flex gap-2">
-    <button onclick="askBot()" class="bg-blue-600 text-white px-4 py-2 rounded w-full">
-      Ask Doctor
-    </button>
-    <button onclick="clearChat()" class="bg-red-500 text-white px-4 py-2 rounded">
-      Clear
-    </button>
-  </div>
+    placeholder="लक्षण लिखें / Type symptoms (Hindi / English)">
+  <button onclick="askBot()" class="bg-blue-600 text-white px-4 py-2 rounded w-full">
+    Ask Doctor
+  </button>
 </div>
 
 <!-- PATIENT FORM -->
-<div class="max-w-4xl mx-auto mt-6 bg-white p-4 rounded shadow">
-<h3 class="font-bold mb-3">Patient Complaint</h3>
-<input id="pname" class="border p-2 w-full mb-2 rounded" placeholder="Patient Name">
+<div class="max-w-4xl mx-auto mt-4 bg-white p-4 rounded shadow">
+<h3 class="font-bold mb-2">Patient Complaint</h3>
+<input id="pname" class="border p-2 w-full mb-2 rounded" placeholder="Name">
 <input id="pmobile" class="border p-2 w-full mb-2 rounded" placeholder="Mobile">
 <input id="page" class="border p-2 w-full mb-2 rounded" placeholder="Age">
 <textarea id="paddress" class="border p-2 w-full mb-2 rounded" placeholder="Address"></textarea>
-<textarea id="pcomplaint" class="border p-2 w-full mb-2 rounded" placeholder="Main Complaint"></textarea>
+<textarea id="pcomplaint" class="border p-2 w-full mb-2 rounded" placeholder="Complaint"></textarea>
 <button onclick="savePatient()" class="bg-green-600 text-white px-4 py-2 rounded w-full">
 Save Patient
 </button>
 </div>
 
-<footer class="mt-auto bg-white p-4 text-center text-xs text-gray-600">
+<!-- ADMIN LOGIN -->
+<div class="max-w-4xl mx-auto mt-4 bg-gray-100 p-4 rounded shadow">
+<h3 class="font-bold text-red-700 mb-2">Admin Login</h3>
+<input id="adminUser" class="border p-2 w-full mb-2 rounded" placeholder="Username">
+<input id="adminPass" type="password" class="border p-2 w-full mb-2 rounded" placeholder="Password">
+<button onclick="adminLogin()" class="bg-red-600 text-white px-4 py-2 rounded w-full">
+Login
+</button>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="adminPanel" class="hidden max-w-4xl mx-auto mt-4 bg-white p-4 rounded shadow">
+<h3 class="font-bold mb-3">Admin Panel</h3>
+
+<!-- CSV UPLOAD -->
+<label class="block font-semibold mb-1">Upload Patient CSV</label>
+<input type="file" accept=".csv" onchange="uploadCSV(this)"
+  class="border p-2 w-full mb-3 rounded">
+
+<!-- CSV DOWNLOAD -->
+<button onclick="downloadCSV()" class="bg-blue-600 text-white px-4 py-2 rounded w-full">
+Download All Patients CSV
+</button>
+</div>
+
+<footer class="mt-auto bg-white p-3 text-center text-xs text-gray-600">
 <strong>Disclaimer:</strong> For clinical reference only
 </footer>
 
 <script>
-/* ================= CHAT UI ================= */
-const chat = document.getElementById("chat");
-
+/* ================= CHAT ================= */
+const chat=document.getElementById("chat");
 function addMsg(text,type="bot"){
  const row=document.createElement("div");
  row.className=`row ${type}`;
@@ -97,65 +113,40 @@ function addMsg(text,type="bot"){
  chat.scrollTop=chat.scrollHeight;
 }
 
-/* ================= HOMEOPATHY ENGINE ================= */
+/* ================= MEDICINE ENGINE ================= */
 const remedies=[
- {
-  keys:["fever","cold","जुकाम","बुखार"],
-  med:"Aconitum napellus",
-  reason:"Sudden fever, cold after exposure to cold air"
- },
- {
-  keys:["headache","migraine","सिर दर्द"],
-  med:"Belladonna",
-  reason:"Throbbing headache, heat, redness"
- },
- {
-  keys:["cough","खांसी","bronchitis"],
-  med:"Bryonia alba",
-  reason:"Dry cough, worse on motion"
- },
- {
-  keys:["diarrhea","loose motion","दस्त"],
-  med:"Podophyllum",
-  reason:"Watery diarrhea, weakness"
- },
- {
-  keys:["anxiety","fear","घबराहट"],
-  med:"Arsenicum album",
-  reason:"Restlessness, anxiety, weakness"
- }
+ {med:"Aconitum napellus",sym:["fever","cold","जुकाम","ठंड"]},
+ {med:"Belladonna",sym:["headache","सिर","दर्द","heat"]},
+ {med:"Bryonia alba",sym:["dry","cough","खांसी"]},
+ {med:"Arsenicum album",sym:["anxiety","घबराहट","burning"]},
+ {med:"Nux vomica",sym:["gas","acidity","कब्ज"]}
 ];
 
-function findMedicine(text){
- text=text.toLowerCase();
- for(let r of remedies){
-  if(r.keys.some(k=>text.includes(k))){
-   return `Suggested Remedy: ${r.med}\nReason: ${r.reason}\n⚠️ Dose as per physician.`;
-  }
- }
- return "No exact match found. Please consult doctor for detailed case taking.";
+function getRemedy(t){
+ t=t.toLowerCase();
+ let best={s:0,m:null};
+ remedies.forEach(r=>{
+  let score=0;
+  r.sym.forEach(x=>{if(t.includes(x)) score++;});
+  if(score>best.s) best={s:score,m:r.med};
+ });
+ return best.s>0
+  ? `Suggested Remedy: ${best.m}\n⚠️ Dose as per physician`
+  : "Clear remedy not found. Case taking needed.";
 }
 
-/* ================= BOT ================= */
 function askBot(){
- const t=msg.value.trim();
- if(!t)return;
- addMsg(t,"user");
- setTimeout(()=>{
-  addMsg(findMedicine(t),"bot");
- },500);
+ if(!msg.value.trim()) return;
+ addMsg(msg.value,"user");
+ setTimeout(()=>addMsg(getRemedy(msg.value),"bot"),400);
  msg.value="";
 }
 
-function clearChat(){
- chat.innerHTML="";
-}
-
-/* ================= PATIENT SAVE ================= */
+/* ================= PATIENT STORAGE ================= */
 let patients=[];
 function savePatient(){
  if(!pname.value||!pmobile.value||!page.value||!paddress.value||!pcomplaint.value){
-  alert("Fill all fields");return;
+  alert("Fill all fields"); return;
  }
  patients.push({
   name:pname.value,
@@ -167,6 +158,52 @@ function savePatient(){
  });
  alert("Patient saved");
  pname.value=pmobile.value=page.value=paddress.value=pcomplaint.value="";
+}
+
+/* ================= ADMIN ================= */
+function adminLogin(){
+ if(adminUser.value==="admin" && adminPass.value==="admin123"){
+  adminPanel.classList.remove("hidden");
+  alert("Admin logged in");
+ } else alert("Invalid login");
+}
+
+/* ================= CSV UPLOAD ================= */
+function uploadCSV(input){
+ const file=input.files[0];
+ if(!file) return;
+ const reader=new FileReader();
+ reader.onload=e=>{
+  const rows=e.target.result.split("\n").slice(1);
+  rows.forEach(r=>{
+   const c=r.split(",");
+   if(c.length>=5){
+    patients.push({
+     name:c[0],
+     mobile:c[1],
+     age:c[2],
+     address:c[3],
+     complaint:c[4],
+     date:c[5]||"Imported"
+    });
+   }
+  });
+  alert("CSV Imported Successfully");
+ };
+ reader.readAsText(file);
+}
+
+/* ================= CSV DOWNLOAD ================= */
+function downloadCSV(){
+ if(!patients.length){alert("No data");return;}
+ let csv="Name,Mobile,Age,Address,Complaint,Date\n";
+ patients.forEach(p=>{
+  csv+=`${p.name},${p.mobile},${p.age},"${p.address}","${p.complaint}",${p.date}\n`;
+ });
+ const a=document.createElement("a");
+ a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+ a.download="patient_records.csv";
+ a.click();
 }
 </script>
 
