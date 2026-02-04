@@ -5,20 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dr. Bhavna – Homeopathy Clinical System</title>
 
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.3/dist/tailwind.min.css" rel="stylesheet"/>
+<!-- Tailwind -->
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
 body{background:#eef4fb}
-.hidden{display:none}
 .chat{height:40vh;overflow-y:auto}
 .row{display:flex;gap:10px;margin-bottom:12px;max-width:85%}
 .bot{align-self:flex-start}
 .user{align-self:flex-end;flex-direction:row-reverse}
 .avatar{
-  width:38px;height:38px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  font-weight:bold;color:#fff
+ width:38px;height:38px;border-radius:50%;
+ display:flex;align-items:center;justify-content:center;
+ font-weight:bold;color:#fff
 }
 .botA{background:#16a34a}
 .userA{background:#2563eb}
@@ -29,112 +29,133 @@ body{background:#eef4fb}
 <body class="min-h-screen flex flex-col">
 
 <!-- HEADER -->
-<div class="bg-white p-4 shadow text-center">
-  <h1 class="text-xl font-bold text-blue-700">
-    Dr. Bhavna – Homeopathy Consultation System
-  </h1>
-  <p class="text-xs text-gray-500">
-    Classical Homeopathy • Patient Record Management
-  </p>
+<div class="bg-white shadow p-4">
+  <div class="max-w-4xl mx-auto flex items-center gap-3 justify-center">
+    <img src="A_header_section_for_the_&quot;Dr._Bhavna_–_Homeopathy_.png"
+         class="w-12 h-12 rounded-full border"
+         alt="Doctor Logo">
+    <div>
+      <h1 class="text-xl font-bold text-blue-700">
+        Dr. Bhavna – Homeopathy Consultation System
+      </h1>
+      <p class="text-xs text-gray-500">
+        Classical Homeopathy • Patient Record Management
+      </p>
+    </div>
+  </div>
 </div>
 
 <!-- CHAT -->
-<div id="chat" class="chat max-w-3xl mx-auto p-4 flex flex-col"></div>
+<div id="chat" class="chat max-w-4xl mx-auto p-4 flex flex-col"></div>
 
-<!-- CHAT INPUT -->
-<div class="bg-white p-4 shadow max-w-3xl mx-auto w-full">
+<!-- INPUT -->
+<div class="bg-white p-4 shadow max-w-4xl mx-auto w-full">
   <input id="msg" class="border rounded w-full px-3 py-2 mb-2"
-    placeholder="लक्षण लिखें या 🎤 से बोलें (Hindi / English)…">
-
-  <div class="flex justify-between items-center gap-2">
-    <div class="space-x-2">
-      <button id="ask" class="bg-blue-600 text-white px-4 py-2 rounded">Ask Doctor</button>
-      <button id="clear" class="bg-red-500 text-white px-4 py-2 rounded">Clear</button>
-    </div>
-    <button id="mic" class="bg-green-600 text-white px-4 py-2 rounded">
-      🎤 हिन्दी बोलें
+         placeholder="लक्षण लिखें / Type symptoms (Hindi or English)">
+  <div class="flex gap-2">
+    <button onclick="askBot()" class="bg-blue-600 text-white px-4 py-2 rounded w-full">
+      Ask Doctor
+    </button>
+    <button onclick="clearChat()" class="bg-red-500 text-white px-4 py-2 rounded">
+      Clear
     </button>
   </div>
 </div>
 
-<!-- PATIENT COMPLAINT FORM -->
-<div class="max-w-3xl mx-auto mt-6 bg-white p-4 rounded shadow">
-<h3 class="font-bold mb-3">Patient Complaint / Appointment</h3>
-
+<!-- PATIENT FORM -->
+<div class="max-w-4xl mx-auto mt-6 bg-white p-4 rounded shadow">
+<h3 class="font-bold mb-3">Patient Complaint</h3>
 <input id="pname" class="border p-2 w-full mb-2 rounded" placeholder="Patient Name">
-<input id="pmobile" class="border p-2 w-full mb-2 rounded" placeholder="Mobile Number">
+<input id="pmobile" class="border p-2 w-full mb-2 rounded" placeholder="Mobile">
 <input id="page" class="border p-2 w-full mb-2 rounded" placeholder="Age">
-<textarea id="paddress" class="border p-2 w-full mb-2 rounded"
-  placeholder="Full Address"></textarea>
-<textarea id="pcomplaint" class="border p-2 w-full mb-3 rounded"
-  placeholder="मुख्य शिकायत / Main Complaint"></textarea>
-
-<button onclick="savePatient()"
-  class="bg-green-600 text-white px-4 py-2 rounded w-full">
-Submit Complaint
-</button>
-</div>
-
-<!-- ADMIN LOGIN -->
-<div class="max-w-3xl mx-auto mt-6 bg-gray-100 p-4 rounded shadow">
-<h3 class="font-bold text-red-700 mb-2">Doctor / Admin Login</h3>
-<input id="adminUser" class="border p-2 w-full mb-2 rounded" placeholder="Login">
-<input id="adminPass" type="password"
-  class="border p-2 w-full mb-2 rounded" placeholder="Password">
-<button onclick="adminLogin()"
-  class="bg-red-600 text-white px-4 py-2 rounded w-full">
-Login
-</button>
-</div>
-
-<!-- ADMIN PANEL -->
-<div id="adminPanel" class="hidden max-w-3xl mx-auto mt-6 bg-white p-4 rounded shadow">
-<h3 class="font-bold mb-3">Admin Panel</h3>
-
-<button onclick="downloadPatientsCSV()"
-  class="bg-blue-600 text-white px-4 py-2 rounded w-full mb-2">
-Download Patient CSV
-</button>
-
-<button onclick="downloadPatientPDF()"
-  class="bg-purple-600 text-white px-4 py-2 rounded w-full">
-Download Latest Patient PDF
+<textarea id="paddress" class="border p-2 w-full mb-2 rounded" placeholder="Address"></textarea>
+<textarea id="pcomplaint" class="border p-2 w-full mb-2 rounded" placeholder="Main Complaint"></textarea>
+<button onclick="savePatient()" class="bg-green-600 text-white px-4 py-2 rounded w-full">
+Save Patient
 </button>
 </div>
 
 <footer class="mt-auto bg-white p-4 text-center text-xs text-gray-600">
-<strong>Disclaimer:</strong>
-This record is for clinical reference only.
+<strong>Disclaimer:</strong> For clinical reference only
 </footer>
 
 <script>
-/* ================= ADMIN ================= */
-const ADMIN_LOGIN="Bhavna";
-const ADMIN_PASSWORD="Bhavna@123";
-let admin=false;
+/* ================= CHAT UI ================= */
+const chat = document.getElementById("chat");
 
-async function hash(t){
- const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t));
- return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");
+function addMsg(text,type="bot"){
+ const row=document.createElement("div");
+ row.className=`row ${type}`;
+ const av=document.createElement("div");
+ av.className=`avatar ${type==="bot"?"botA":"userA"}`;
+ av.textContent=type==="bot"?"Dr":"You";
+ const b=document.createElement("div");
+ b.className="bubble";
+ b.innerText=text;
+ row.append(av,b);
+ chat.appendChild(row);
+ chat.scrollTop=chat.scrollHeight;
 }
-let storedHash="";
-(async()=>storedHash=await hash(ADMIN_PASSWORD))();
 
-/* ================= DATA ================= */
+/* ================= HOMEOPATHY ENGINE ================= */
+const remedies=[
+ {
+  keys:["fever","cold","जुकाम","बुखार"],
+  med:"Aconitum napellus",
+  reason:"Sudden fever, cold after exposure to cold air"
+ },
+ {
+  keys:["headache","migraine","सिर दर्द"],
+  med:"Belladonna",
+  reason:"Throbbing headache, heat, redness"
+ },
+ {
+  keys:["cough","खांसी","bronchitis"],
+  med:"Bryonia alba",
+  reason:"Dry cough, worse on motion"
+ },
+ {
+  keys:["diarrhea","loose motion","दस्त"],
+  med:"Podophyllum",
+  reason:"Watery diarrhea, weakness"
+ },
+ {
+  keys:["anxiety","fear","घबराहट"],
+  med:"Arsenicum album",
+  reason:"Restlessness, anxiety, weakness"
+ }
+];
+
+function findMedicine(text){
+ text=text.toLowerCase();
+ for(let r of remedies){
+  if(r.keys.some(k=>text.includes(k))){
+   return `Suggested Remedy: ${r.med}\nReason: ${r.reason}\n⚠️ Dose as per physician.`;
+  }
+ }
+ return "No exact match found. Please consult doctor for detailed case taking.";
+}
+
+/* ================= BOT ================= */
+function askBot(){
+ const t=msg.value.trim();
+ if(!t)return;
+ addMsg(t,"user");
+ setTimeout(()=>{
+  addMsg(findMedicine(t),"bot");
+ },500);
+ msg.value="";
+}
+
+function clearChat(){
+ chat.innerHTML="";
+}
+
+/* ================= PATIENT SAVE ================= */
 let patients=[];
-
-/* ================= MIC (Hindi) ================= */
-const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-if(SR){
- const r=new SR();r.lang="hi-IN";
- mic.onclick=()=>r.start();
- r.onresult=e=>msg.value=e.results[0][0].transcript;
-}
-
-/* ================= SAVE PATIENT ================= */
 function savePatient(){
  if(!pname.value||!pmobile.value||!page.value||!paddress.value||!pcomplaint.value){
-  alert("कृपया सभी जानकारी भरें");return;
+  alert("Fill all fields");return;
  }
  patients.push({
   name:pname.value,
@@ -144,57 +165,8 @@ function savePatient(){
   complaint:pcomplaint.value,
   date:new Date().toLocaleString()
  });
- alert("Patient record saved");
+ alert("Patient saved");
  pname.value=pmobile.value=page.value=paddress.value=pcomplaint.value="";
-}
-
-/* ================= ADMIN LOGIN ================= */
-async function adminLogin(){
- if(adminUser.value!==ADMIN_LOGIN){alert("Invalid login");return;}
- const h=await hash(adminPass.value);
- if(h===storedHash){
-  admin=true;
-  adminPanel.classList.remove("hidden");
-  alert("Admin logged in");
- }else alert("Wrong password");
-}
-
-/* ================= CSV EXPORT ================= */
-function downloadPatientsCSV(){
- if(!patients.length){alert("No data");return;}
- let csv="Name,Mobile,Age,Address,Complaint,Date\n";
- patients.forEach(p=>{
-  csv+=`${p.name},${p.mobile},${p.age},"${p.address}","${p.complaint}",${p.date}\n`;
- });
- const a=document.createElement("a");
- a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
- a.download="patient_records.csv";
- a.click();
-}
-
-/* ================= PDF EXPORT ================= */
-function downloadPatientPDF(){
- if(!patients.length){alert("No patient record");return;}
-
- const p=patients[patients.length-1];
- const { jsPDF } = window.jspdf;
- const doc=new jsPDF();
-
- doc.setFontSize(16);
- doc.text("Dr. Bhavna – Homeopathy Patient Record",10,15);
-
- doc.setFontSize(11);
- doc.text(`Patient Name: ${p.name}`,10,30);
- doc.text(`Mobile: ${p.mobile}`,10,38);
- doc.text(`Age: ${p.age}`,10,46);
- doc.text(`Address: ${p.address}`,10,54);
- doc.text(`Complaint: ${p.complaint}`,10,70);
- doc.text(`Date: ${p.date}`,10,90);
-
- doc.text("Doctor: Dr. Bhavna",10,110);
- doc.text("Signature: ____________________",10,125);
-
- doc.save(`Patient_${p.name}.pdf`);
 }
 </script>
 
