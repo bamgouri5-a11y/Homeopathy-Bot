@@ -3,155 +3,130 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>🌿 Dr. Bhavna Homeopathy System</title>
 
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
 body{background:#eef4fb}
-.card{
- background:#f8fafc;
- border-left:5px solid #2563eb;
- padding:12px;
- border-radius:10px;
- margin-top:12px
-}
-.logo{
- width:45px;height:45px;
- border-radius:50%;
- background:linear-gradient(135deg,#2563eb,#16a34a);
- color:white;
- display:flex;
- align-items:center;
- justify-content:center;
- font-weight:bold;
- font-size:20px;
-}
+.card{background:#f8fafc;border-left:5px solid #2563eb;padding:12px;border-radius:10px;margin-top:12px}
+.logo{width:45px;height:45px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#16a34a);color:white;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:20px}
 </style>
 </head>
 
 <body class="min-h-screen flex flex-col">
 
 <!-- HEADER -->
-<header class="bg-white shadow p-4 flex items-center justify-center gap-3">
+<header class="bg-white shadow p-4 flex justify-between items-center">
+ <div class="flex items-center gap-3">
   <div class="logo">HB</div>
-  <h1 class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-green-600">
-    Dr. Bhavna Homeopathy System
+  <h1 id="title" class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-green-600">
+   Dr. Bhavna Homeopathy System
   </h1>
+ </div>
+ <button onclick="toggleLang()" class="bg-blue-600 text-white px-3 py-1 rounded text-sm">
+  🌐 English / हिंदी
+ </button>
 </header>
 
-<!-- SEARCH SECTION -->
+<!-- SEARCH -->
 <section class="max-w-3xl mx-auto mt-6 bg-white p-5 rounded shadow">
-  <h2 class="font-bold text-lg mb-2">🔍 Search Medicine by Symptoms</h2>
+ <h2 id="searchTitle" class="font-bold text-lg mb-2">🔍 Search Medicine by Symptoms</h2>
 
-  <div class="flex gap-2">
-    <input id="symptomInput" class="border p-2 w-full rounded"
-     placeholder="Type symptoms or use mic (fever headache anxiety)">
-    <button onclick="voiceSearch()" class="bg-green-600 text-white px-3 rounded">🎤</button>
-  </div>
+ <input id="symptomInput" class="border p-2 w-full rounded mb-2"
+  placeholder="Enter symptoms">
 
-  <button onclick="searchMedicine()" class="mt-3 bg-blue-600 text-white py-2 rounded w-full">
-    Search Medicine
-  </button>
+ <div class="flex gap-2">
+  <button onclick="searchMedicine()" class="bg-blue-600 text-white py-2 rounded w-full">Search</button>
+  <button onclick="voiceSearch()" class="bg-green-600 text-white px-3 rounded">🎤</button>
+ </div>
 
-  <div id="medicineResult"></div>
-
-  <h3 class="font-semibold mt-4">🕘 Search History</h3>
-  <ul id="history" class="text-sm text-gray-700 list-disc ml-5"></ul>
+ <div id="medicineResult"></div>
 </section>
 
-<!-- APPOINTMENT FORM -->
+<!-- APPOINTMENT -->
 <section class="max-w-3xl mx-auto mt-6 bg-white p-5 rounded shadow">
-  <h2 class="font-bold text-lg mb-2">📝 Patient Appointment</h2>
+ <h2 id="apptTitle" class="font-bold text-lg mb-2">📝 Patient Appointment</h2>
 
-  <input id="pname" class="border p-2 w-full mb-2 rounded" placeholder="Patient Name">
-  <input id="page" class="border p-2 w-full mb-2 rounded" placeholder="Age">
-  <input id="pmobile" class="border p-2 w-full mb-2 rounded" placeholder="Mobile Number">
-  <textarea id="pcomplaint" class="border p-2 w-full mb-2 rounded"
-   placeholder="Main Complaint"></textarea>
+ <input id="pname" class="border p-2 w-full mb-2 rounded" placeholder="Patient Name">
+ <input id="page" class="border p-2 w-full mb-2 rounded" placeholder="Age">
+ <input id="pmobile" class="border p-2 w-full mb-2 rounded" placeholder="Mobile Number">
+ <textarea id="pcomplaint" class="border p-2 w-full mb-2 rounded" placeholder="Main Complaint"></textarea>
 
-  <button onclick="saveAppointment()" class="bg-green-600 text-white py-2 rounded w-full">
-    Submit Appointment
-  </button>
+ <button onclick="saveAppointment()" class="bg-green-600 text-white py-2 rounded w-full">
+  Submit Appointment
+ </button>
+
+ <button onclick="generatePDF()" class="mt-2 bg-purple-600 text-white py-2 rounded w-full">
+  📄 Generate Prescription PDF
+ </button>
 </section>
 
-<!-- ADMIN LOGIN -->
-<section class="max-w-3xl mx-auto mt-6 bg-gray-100 p-5 rounded shadow">
-  <h2 class="font-bold text-lg text-red-600 mb-2">🔐 Admin Login</h2>
-
-  <input id="adminUser" class="border p-2 w-full mb-2 rounded" placeholder="Username">
-  <input id="adminPass" type="password" class="border p-2 w-full mb-2 rounded" placeholder="Password">
-
-  <button onclick="adminLogin()" class="bg-red-600 text-white py-2 rounded w-full">
-    Login
-  </button>
-</section>
-
-<!-- ADMIN PANEL -->
-<section id="adminPanel" class="max-w-3xl mx-auto mt-6 bg-white p-5 rounded shadow hidden">
-  <button onclick="downloadCSV()" class="bg-blue-700 text-white py-2 rounded w-full">
-    Download Appointments CSV
-  </button>
-</section>
-
-<!-- FOOTER DISCLAIMER -->
-<footer class="mt-auto bg-white text-center text-xs text-gray-500 p-4">
-  ⚠ Disclaimer: This system is for educational and clinical support only.
-  Final diagnosis and prescription must be done by a qualified homeopathic physician.
+<!-- FOOTER -->
+<footer id="disclaimer" class="mt-auto bg-white text-center text-xs text-gray-500 p-4">
+ ⚠ Disclaimer: This system is for educational support only. Final prescription must be done by a qualified homeopathic physician.
 </footer>
 
 <script>
+/* ================= LANGUAGE ================= */
+let lang="en";
+function toggleLang(){
+ lang=lang==="en"?"hi":"en";
+ document.getElementById("title").innerText =
+  lang==="en"?"Dr. Bhavna Homeopathy System":"डॉ. भावना होम्योपैथी सिस्टम";
+ document.getElementById("searchTitle").innerText =
+  lang==="en"?"🔍 Search Medicine by Symptoms":"🔍 लक्षणों द्वारा दवा खोजें";
+ document.getElementById("apptTitle").innerText =
+  lang==="en"?"📝 Patient Appointment":"📝 रोगी अपॉइंटमेंट";
+ document.getElementById("symptomInput").placeholder =
+  lang==="en"?"Enter symptoms":"लक्षण लिखें";
+ document.getElementById("pname").placeholder =
+  lang==="en"?"Patient Name":"रोगी का नाम";
+ document.getElementById("page").placeholder =
+  lang==="en"?"Age":"उम्र";
+ document.getElementById("pmobile").placeholder =
+  lang==="en"?"Mobile Number":"मोबाइल नंबर";
+ document.getElementById("pcomplaint").placeholder =
+  lang==="en"?"Main Complaint":"मुख्य शिकायत";
+ document.getElementById("disclaimer").innerText =
+  lang==="en"
+   ?"⚠ Disclaimer: This system is for educational support only. Final prescription must be done by a qualified homeopathic physician."
+   :"⚠ अस्वीकरण: यह प्रणाली केवल शैक्षणिक सहायता के लिए है। अंतिम उपचार योग्य होम्योपैथिक चिकित्सक द्वारा किया जाना चाहिए।";
+}
+
 /* ================= MEDICINES ================= */
 const medicines=[
- {name:"Belladonna",keywords:["fever","headache","throbbing","heat"],symptoms:"Sudden fever",keynotes:"Red face"},
- {name:"Aconitum",keywords:["fever","cold","fear","sudden"],symptoms:"Sudden fever after cold",keynotes:"Anxiety"},
- {name:"Bryonia",keywords:["pain","movement","dry"],symptoms:"Pain worse movement",keynotes:"Better rest"},
- {name:"Rhus Tox",keywords:["joint","stiff","movement"],symptoms:"Stiff better motion",keynotes:"Restless"},
- {name:"Nux Vomica",keywords:["gas","constipation","irritable"],symptoms:"Digestive trouble",keynotes:"Overworked"},
- {name:"Pulsatilla",keywords:["cold","yellow","changeable"],symptoms:"Cold yellow discharge",keynotes:"Open air"},
- {name:"Gelsemium",keywords:["weak","fever","dull"],symptoms:"Weakness with fever",keynotes:"Dull"},
- {name:"Arsenicum",keywords:["burning","weak","anxiety"],symptoms:"Burning pains",keynotes:"Anxiety"}
+ {name:"Belladonna",keywords:["fever","headache","heat"],symptoms:"Sudden fever",keynotes:"Red face"},
+ {name:"Aconitum",keywords:["fever","cold","fear"],symptoms:"Sudden fever after cold",keynotes:"Anxiety"},
+ {name:"Bryonia",keywords:["pain","movement"],symptoms:"Pain worse movement",keynotes:"Better rest"},
+ {name:"Rhus Tox",keywords:["joint","stiff"],symptoms:"Stiffness better motion",keynotes:"Restless"},
+ {name:"Arsenicum",keywords:["burning","weak"],symptoms:"Burning pains",keynotes:"Anxiety"}
 ];
 
+let lastResults=[];
+
 /* ================= SEARCH ================= */
-let history = JSON.parse(localStorage.getItem("history")) || [];
 function searchMedicine(){
  const text=symptomInput.value.toLowerCase();
- if(!text) return;
- history.unshift(text);
- history=history.slice(0,5);
- localStorage.setItem("history",JSON.stringify(history));
- renderHistory();
-
- const results=medicines.map(m=>{
+ medicineResult.innerHTML="";
+ lastResults=medicines.map(m=>{
   let score=0;
   m.keywords.forEach(k=>{if(text.includes(k))score++});
   return {...m,score};
  }).sort((a,b)=>b.score-a.score).slice(0,5);
 
- medicineResult.innerHTML="";
- results.forEach((m,i)=>{
+ lastResults.forEach((m,i)=>{
   medicineResult.innerHTML+=`
    <div class="card">
-    <b>${i+1}. ${m.name}</b>
-    <span class="text-blue-600"> (Similarity: ${m.score})</span><br>
+    <b>${i+1}. ${m.name}</b> (Similarity: ${m.score})<br>
     <b>Indication:</b> ${m.symptoms}<br>
     <b>Keynotes:</b> ${m.keynotes}
    </div>`;
  });
 }
 
-function renderHistory(){
- historyEl.innerHTML="";
- history.forEach(h=>{
-  historyEl.innerHTML+=`<li>${h}</li>`;
- });
-}
-const historyEl=document.getElementById("history");
-renderHistory();
-
-/* ================= VOICE SEARCH ================= */
+/* ================= VOICE ================= */
 function voiceSearch(){
  const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
  if(!SpeechRecognition){alert("Voice not supported");return;}
@@ -165,35 +140,33 @@ function voiceSearch(){
 }
 
 /* ================= APPOINTMENT ================= */
-let appointments=JSON.parse(localStorage.getItem("appointments"))||[];
 function saveAppointment(){
- appointments.push({
-  name:pname.value,
-  age:page.value,
-  mobile:pmobile.value,
-  complaint:pcomplaint.value,
-  date:new Date().toLocaleString()
- });
- localStorage.setItem("appointments",JSON.stringify(appointments));
  alert("Appointment saved");
- pname.value=page.value=pmobile.value=pcomplaint.value="";
 }
 
-/* ================= ADMIN ================= */
-function adminLogin(){
- if(adminUser.value==="admin" && adminPass.value==="admin123"){
-  adminPanel.classList.remove("hidden");
- } else alert("Invalid credentials");
-}
-function downloadCSV(){
- let csv="Name,Age,Mobile,Complaint,Date\n";
- appointments.forEach(a=>{
-  csv+=`${a.name},${a.age},${a.mobile},"${a.complaint}",${a.date}\n`;
+/* ================= PDF ================= */
+function generatePDF(){
+ const { jsPDF } = window.jspdf;
+ const doc = new jsPDF();
+ doc.setFontSize(16);
+ doc.text("Dr. Bhavna Homeopathy Prescription",20,20);
+ doc.setFontSize(11);
+ doc.text(`Patient: ${pname.value}`,20,35);
+ doc.text(`Age: ${page.value}`,20,42);
+ doc.text(`Mobile: ${pmobile.value}`,20,49);
+ doc.text(`Complaint: ${pcomplaint.value}`,20,56);
+
+ let y=70;
+ doc.text("Suggested Medicines:",20,y);
+ y+=8;
+ lastResults.forEach((m,i)=>{
+  doc.text(`${i+1}. ${m.name} - ${m.symptoms}`,20,y);
+  y+=7;
  });
- const link=document.createElement("a");
- link.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
- link.download="appointments.csv";
- link.click();
+
+ doc.setFontSize(9);
+ doc.text("Disclaimer: Educational support only.",20,280);
+ doc.save("Prescription.pdf");
 }
 </script>
 
