@@ -21,7 +21,10 @@ body{background:#eef4fb}
 }
 .botA{background:#16a34a}
 .userA{background:#2563eb}
-.bubble{background:#fff;padding:12px;border-radius:14px;font-size:14px}
+.bubble{
+  background:#fff;padding:12px;border-radius:14px;
+  font-size:14px;line-height:1.6
+}
 .card{
   border-left:4px solid #2563eb;
   background:#f8fafc;padding:10px;
@@ -32,15 +35,281 @@ body{background:#eef4fb}
 
 <body class="min-h-screen flex flex-col">
 
-<!-- HEADER -->
+<!-- ================= HEADER ================= -->
 <div class="bg-white p-4 shadow text-center">
   <h1 class="text-xl font-bold text-blue-700">
     Dr. Bhavna – Homeopathy Consultation System
   </h1>
   <p class="text-xs text-gray-500">
-    Classical Homeopathy • Clinical Decision Support
+    Classical Homeopathy • Symptom-Based Clinical Support
   </p>
 </div>
 
-<!-- CHAT -->
-<div id="chat" class="chat max-w-3xl mx-auto p-4 fle
+<!-- ================= CHAT ================= -->
+<div id="chat" class="chat max-w-3xl mx-auto p-4 flex flex-col"></div>
+
+<!-- ================= CHAT INPUT ================= -->
+<div class="bg-white p-4 shadow max-w-3xl mx-auto w-full">
+  <input id="msg" class="border rounded w-full px-3 py-2 mb-2"
+    placeholder="Describe symptoms clearly (location, sensation, better/worse, time)…">
+
+  <div class="flex justify-between items-center gap-2">
+    <div class="space-x-2">
+      <button id="ask" class="bg-blue-600 text-white px-4 py-2 rounded">Ask Doctor</button>
+      <button id="clear" class="bg-red-500 text-white px-4 py-2 rounded">Clear</button>
+    </div>
+    <button id="mic" class="bg-green-600 text-white px-4 py-2 rounded">🎤 Speak</button>
+  </div>
+</div>
+
+<!-- ================= PATIENT COMPLAINT ================= -->
+<div class="max-w-3xl mx-auto mt-6 bg-white p-4 rounded shadow">
+<h3 class="font-bold mb-3">Patient Complaint / Appointment</h3>
+
+<input id="pname" class="border p-2 w-full mb-2 rounded" placeholder="Patient Name">
+<input id="pmobile" class="border p-2 w-full mb-2 rounded" placeholder="Mobile Number">
+<input id="page" class="border p-2 w-full mb-2 rounded" placeholder="Age">
+
+<textarea id="paddress" class="border p-2 w-full mb-2 rounded"
+  placeholder="Full Address"></textarea>
+
+<textarea id="pcomplaint" class="border p-2 w-full mb-3 rounded"
+  placeholder="Describe Main Complaint"></textarea>
+
+<button onclick="savePatient()"
+  class="bg-green-600 text-white px-4 py-2 rounded w-full">
+Submit Complaint
+</button>
+</div>
+
+<!-- ================= ADMIN LOGIN ================= -->
+<div class="max-w-3xl mx-auto mt-6 bg-gray-100 p-4 rounded shadow">
+<h3 class="font-bold text-red-700 mb-2">Doctor / Admin Login</h3>
+<input id="adminUser" class="border p-2 w-full mb-2 rounded" placeholder="Login">
+<input id="adminPass" type="password"
+  class="border p-2 w-full mb-2 rounded" placeholder="Password">
+<button onclick="adminLogin()"
+  class="bg-red-600 text-white px-4 py-2 rounded w-full">
+Login
+</button>
+</div>
+
+<!-- ================= ADMIN PANEL ================= -->
+<div id="adminPanel" class="hidden max-w-3xl mx-auto mt-6 bg-white p-4 rounded shadow">
+
+<h3 class="font-bold mb-3">Admin Panel</h3>
+
+<button onclick="downloadPatients()"
+  class="bg-blue-600 text-white px-4 py-2 rounded w-full mb-3">
+Download Patient Complaints (CSV)
+</button>
+
+</div>
+
+<!-- ================= FOOTER ================= -->
+<footer class="mt-auto bg-white p-4 text-center text-xs text-gray-600">
+<strong>Disclaimer:</strong>
+This system provides informational homeopathic guidance only.
+Final remedy, potency & repetition require personal consultation.
+</footer>
+
+<script>
+/* =====================================================
+   ADMIN LOGIN CONFIG (CHANGE HERE ONLY)
+===================================================== */
+const ADMIN_LOGIN = "Bhavna";
+const ADMIN_PASSWORD_PLAIN = "Bhavna@123";
+
+/* =====================================================
+   SECURITY (SHA-256)
+===================================================== */
+let admin=false;
+let storedHash="";
+
+async function hash(text){
+ const buf=await crypto.subtle.digest(
+  "SHA-256",new TextEncoder().encode(text)
+ );
+ return [...new Uint8Array(buf)]
+   .map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+
+(async()=>{ storedHash = await hash(ADMIN_PASSWORD_PLAIN); })();
+
+/* =====================================================
+   DATA
+===================================================== */
+let patients=[];
+
+let medicines=[
+{
+ name:"Belladonna",
+ keywords:["fever","headache","throbbing","sudden","red"],
+ symptoms:"Sudden onset fever, throbbing headache, red hot face, pulsating pain.",
+ keynotes:"Sudden, violent symptoms; heat; congestion; worse light & noise.",
+ potency:"30C"
+},
+{
+ name:"Nux Vomica",
+ keywords:["constipation","gas","irritable","indigestion","stress"],
+ symptoms:"Constipation with frequent urging, gastric irritation, nausea.",
+ keynotes:"Overworked, irritable, chilly, worse morning.",
+ potency:"30C"
+},
+{
+ name:"Pulsatilla",
+ keywords:["cold","cough","yellow","discharge","changeable"],
+ symptoms:"Thick yellow bland discharge, mild fever, shifting complaints.",
+ keynotes:"Better open air, worse heat, gentle disposition.",
+ potency:"30C"
+},
+{
+ name:"Arnica",
+ keywords:["injury","bruise","trauma","sore"],
+ symptoms:"Body soreness as if beaten, after injury or fall.",
+ keynotes:"Says nothing is wrong, fears touch.",
+ potency:"200C"
+},
+{
+ name:"Bryonia",
+ keywords:["dry","pain","motion","thirst"],
+ symptoms:"Dry cough, stitching pain, worse slightest motion.",
+ keynotes:"Better rest, wants to be alone.",
+ potency:"30C"
+},
+{
+ name:"Rhus Tox",
+ keywords:["stiff","joint","better motion","restless"],
+ symptoms:"Joint stiffness, worse rest, better continued motion.",
+ keynotes:"Restlessness, worse damp weather.",
+ potency:"30C"
+},
+{
+ name:"Sulphur",
+ keywords:["burning","heat","chronic","skin"],
+ symptoms:"Burning sensations, heat in feet, chronic complaints.",
+ keynotes:"Standing thinker, heat, untidy.",
+ potency:"200C"
+},
+{
+ name:"Calcarea Carbonica",
+ keywords:["sweating","fatigue","cold","anxiety"],
+ symptoms:"Easy fatigue, cold sensitivity, head sweating.",
+ keynotes:"Chilly, slow, anxious about health.",
+ potency:"30C"
+}
+];
+
+/* =====================================================
+   CHAT
+===================================================== */
+const chat=document.getElementById("chat");
+const msg=document.getElementById("msg");
+
+function add(type,text){
+ const r=document.createElement("div");
+ r.className="row "+type;
+ const a=document.createElement("div");
+ a.className="avatar "+(type==="bot"?"botA":"userA");
+ a.innerText=type==="bot"?"Dr":"You";
+ const b=document.createElement("div");
+ b.className="bubble";b.innerText=text;
+ r.append(a,b);chat.appendChild(r);
+ chat.scrollTop=chat.scrollHeight;
+}
+
+/* GREETING (UPDATED) */
+add("bot",
+"🙏 Welcome to Dr. Bhavna’s Homeopathy Consultation System.\n\n" +
+"Please describe your symptoms clearly:\n" +
+"• Location of complaint\n" +
+"• Sensation (burning, throbbing, stiffness etc.)\n" +
+"• What makes it better or worse\n" +
+"• Time, weather or food effects\n\n" +
+"You may also use the 🎤 voice input.\n" +
+"This system provides preliminary guidance only."
+);
+
+/* MIC */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(SR){
+ const r=new SR();r.lang="en-IN";
+ mic.onclick=()=>r.start();
+ r.onresult=e=>msg.value=e.results[0][0].transcript;
+}
+
+/* ASK */
+ask.onclick=()=>{
+ if(!msg.value.trim())return;
+ const t=msg.value.toLowerCase();msg.value="";
+ add("user",t);
+
+ const res=medicines.map(m=>{
+  let s=0;m.keywords.forEach(k=>{if(t.includes(k))s++});
+  return {...m,score:s};
+ }).filter(m=>m.score>0)
+   .sort((a,b)=>b.score-a.score).slice(0,2);
+
+ if(!res.length){
+  add("bot","No close remedy match found. Personal consultation advised.");
+  return;
+ }
+
+ res.forEach(m=>{
+  add("bot",
+   `${m.name}\nSymptoms: ${m.symptoms}\nKeynotes: ${m.keynotes}\n`+
+   (admin?`Potency: ${m.potency}`:"Potency visible to doctor only")
+  );
+ });
+};
+
+clear.onclick=()=>chat.innerHTML="";
+
+/* PATIENT SAVE */
+function savePatient(){
+ if(!pname.value||!pmobile.value||!page.value||!paddress.value||!pcomplaint.value){
+  alert("Please fill all fields");return;
+ }
+ patients.push({
+  name:pname.value,
+  mobile:pmobile.value,
+  age:page.value,
+  address:paddress.value,
+  complaint:pcomplaint.value,
+  date:new Date().toLocaleString()
+ });
+ alert("Patient complaint saved");
+ pname.value=pmobile.value=page.value=paddress.value=pcomplaint.value="";
+}
+
+/* ADMIN LOGIN (UPDATED) */
+async function adminLogin(){
+ if(adminUser.value!==ADMIN_LOGIN){
+  alert("Invalid login");return;
+ }
+ const h=await hash(adminPass.value);
+ if(h===storedHash){
+  admin=true;
+  adminPanel.classList.remove("hidden");
+  alert("Admin logged in successfully");
+ }else{
+  alert("Wrong password");
+ }
+}
+
+/* CSV EXPORT */
+function downloadPatients(){
+ if(!patients.length){alert("No data");return;}
+ let csv="Name,Mobile,Age,Address,Complaint,Date\n";
+ patients.forEach(p=>{
+  csv+=`${p.name},${p.mobile},${p.age},"${p.address}","${p.complaint}",${p.date}\n`;
+ });
+ const a=document.createElement("a");
+ a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+ a.download="patient_complaints.csv";
+ a.click();
+}
+</script>
+
+</body>
+</html>
