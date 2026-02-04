@@ -11,29 +11,38 @@
 <style>
 body{background:#eef4fb}
 .card{background:#f8fafc;border-left:4px solid #2563eb}
+.chat{max-height:40vh;overflow-y:auto}
 .hidden{display:none}
-.chat{max-height:45vh;overflow-y:auto}
 </style>
 </head>
 
 <body class="flex flex-col min-h-screen">
 
 <!-- HEADER -->
-<header class="bg-white shadow p-4 flex justify-center gap-3 items-center">
-  <img src="https://cdn-icons-png.flaticon.com/512/387/387561.png" class="w-12 h-12 rounded-lg">
+<header class="bg-white shadow p-4 flex items-center justify-center gap-3">
+  <img src="https://cdn-icons-png.flaticon.com/512/387/387561.png"
+       class="w-12 h-12 rounded-lg"/>
   <div>
-    <h1 class="text-lg font-bold text-blue-700">
+    <h1 id="title" class="text-lg font-bold text-blue-700">
       Dr. Bhavna – Homeopathy Consultation Bot
     </h1>
-    <p class="text-xs text-gray-500">
+    <p id="subtitle" class="text-xs text-gray-500">
       Classical • Symptomatology Based Guidance
     </p>
   </div>
 </header>
 
-<!-- PATIENT FORM -->
-<section class="max-w-3xl mx-auto w-full bg-white p-4 mt-3 rounded shadow">
-  <h2 class="font-bold text-blue-700 mb-2">Patient Details</h2>
+<!-- LANGUAGE TOGGLE -->
+<div class="max-w-3xl mx-auto w-full p-2 flex justify-end">
+  <button onclick="toggleLang()"
+    class="bg-green-600 text-white px-3 py-1 rounded text-sm">
+    हिंदी / English
+  </button>
+</div>
+
+<!-- PATIENT DETAILS -->
+<section class="max-w-3xl mx-auto w-full bg-white p-4 mt-2 rounded shadow">
+  <h2 id="ptHeading" class="font-bold text-blue-700 mb-2">Patient Details</h2>
 
   <input id="ptName" class="border w-full px-2 py-1 mb-2" placeholder="Patient Name">
   <input id="ptAge" class="border w-full px-2 py-1 mb-2" placeholder="Age">
@@ -42,7 +51,7 @@ body{background:#eef4fb}
   <textarea id="ptComplaint" class="border w-full px-2 py-1 mb-2"
     placeholder="Present Complaint / Symptoms"></textarea>
 
-  <button id="submitBtn"
+  <button id="ptSubmit" onclick="submitPatient()"
     class="bg-green-600 text-white px-4 py-2 rounded w-full">
     Submit to Doctor
   </button>
@@ -55,7 +64,7 @@ body{background:#eef4fb}
   <div class="flex gap-2 items-center">
     <input id="adminPass" type="password" class="border px-2 py-1 rounded"
       placeholder="Doctor password">
-    <button id="loginBtn"
+    <button onclick="loginAdmin()"
       class="bg-blue-600 text-white px-3 py-1 rounded">
       Login
     </button>
@@ -70,7 +79,7 @@ body{background:#eef4fb}
   <div id="caseList"></div>
 </section>
 
-<!-- MEDICINE RESULT -->
+<!-- MEDICINE RESULTS -->
 <main id="chat"
  class="chat max-w-3xl mx-auto w-full p-4 flex flex-col gap-3">
 </main>
@@ -80,7 +89,8 @@ body{background:#eef4fb}
   <div class="max-w-3xl mx-auto w-full">
     <input id="msg"
       class="border rounded w-full px-3 py-2 mb-2"
-      placeholder="Describe symptoms…">
+      placeholder="Describe symptoms…"/>
+
     <div class="flex gap-2">
       <button id="ask"
         class="bg-blue-600 text-white px-4 py-2 rounded w-full">
@@ -90,6 +100,10 @@ body{background:#eef4fb}
         class="bg-gray-500 text-white px-4 py-2 rounded">
         Clear
       </button>
+      <button id="mic"
+        class="bg-green-600 text-white px-4 py-2 rounded">
+        🎤
+      </button>
     </div>
   </div>
 </footer>
@@ -97,107 +111,76 @@ body{background:#eef4fb}
 <script>
 const { jsPDF } = window.jspdf;
 
-/* ===== STORAGE ===== */
-let patientCases = JSON.parse(localStorage.getItem("patientCases") || "[]");
+/* ===== LANGUAGE ===== */
+let lang="en";
+const T={
+ en:{
+  title:"Dr. Bhavna – Homeopathy Consultation Bot",
+  subtitle:"Classical • Symptomatology Based Guidance",
+  ptHeading:"Patient Details",
+  submit:"Submit to Doctor",
+  find:"Find Remedies",
+  clear:"Clear",
+  msgPH:"Describe symptoms (fever, pain worse motion, anxiety)…"
+ },
+ hi:{
+  title:"डॉ. भावना – होम्योपैथी परामर्श बॉट",
+  subtitle:"क्लासिकल • लक्षण आधारित मार्गदर्शन",
+  ptHeading:"रोगी विवरण",
+  submit:"डॉक्टर को भेजें",
+  find:"दवा खोजें",
+  clear:"साफ करें",
+  msgPH:"अपने लक्षण बोलें या लिखें (बुखार, दर्द, बेचैनी)…"
+ }
+};
+
+function toggleLang(){
+ lang = lang==="en"?"hi":"en";
+ title.innerText=T[lang].title;
+ subtitle.innerText=T[lang].subtitle;
+ ptHeading.innerText=T[lang].ptHeading;
+ ptSubmit.innerText=T[lang].submit;
+ ask.innerText=T[lang].find;
+ clearBtn.innerText=T[lang].clear;
+ msg.placeholder=T[lang].msgPH;
+}
 
 /* ===== MEDICINES ===== */
 const medicines=[
- {name:"Belladonna",keys:["fever","throbbing","heat"],
-  keynote:["Sudden onset","High fever","Throbbing pain"],
-  basis:"Acute inflammatory congestion"},
- {name:"Bryonia",keys:["motion","pain","dry"],
-  keynote:["Worse motion","Dry mouth","Thirst"],
-  basis:"Serous inflammation"},
- {name:"Arsenicum",keys:["burning","anxiety"],
-  keynote:["Burning pains","Anxiety","Restlessness"],
-  basis:"Exhaustion states"},
- {name:"Pulsatilla",keys:["cold","cough"],
-  keynote:["Changeable","Better open air"],
-  basis:"Venous congestion"},
- {name:"Nux vomica",keys:["constipation","gas"],
-  keynote:["Irritable","Chilly"],
-  basis:"Gastric disorder"},
- {name:"Rhus tox",keys:["stiff","motion"],
-  keynote:["Better motion","Worse rest"],
-  basis:"Rheumatism"}
+{name:"Belladonna",keys:["fever","throbbing","heat","red"],
+ key:["बुखार","धड़कता","गरम","लाल"],
+ keynote:["Sudden onset","High fever","Throbbing pains","Red hot face"],
+ basis:"Acute inflammatory congestion"},
+{name:"Bryonia alba",keys:["motion","pain","dry"],
+ key:["हिलने","दर्द","सूखापन"],
+ keynote:["Pain worse motion","Dry mouth","Thirst","Wants rest"],
+ basis:"Serous inflammation"},
+{name:"Arsenicum album",keys:["burning","anxiety","weak"],
+ key:["जलन","बेचैनी","कमजोरी"],
+ keynote:["Burning pains","Anxiety","Restlessness","Prostration"],
+ basis:"Exhaustion states"},
+{name:"Pulsatilla",keys:["cold","cough","changeable"],
+ key:["सर्दी","खांसी","बदलते"],
+ keynote:["Changeable symptoms","Better open air","Mild nature"],
+ basis:"Venous congestion"},
+{name:"Nux vomica",keys:["constipation","gas","irritable"],
+ key:["कब्ज","गैस","चिड़चिड़ापन"],
+ keynote:["Irritable","Chilly","Overworked"],
+ basis:"Gastric disorder"},
+{name:"Rhus tox",keys:["stiff","motion","joint"],
+ key:["जकड़न","हिलने","जोड़"],
+ keynote:["Better motion","Worse rest","Stiffness"],
+ basis:"Rheumatism"}
 ];
 
-/* ===== PATIENT SUBMIT ===== */
-submitBtn.onclick = () => {
- const data={
-  name:ptName.value.trim(),
-  age:ptAge.value.trim(),
-  mobile:ptMobile.value.trim(),
-  address:ptAddress.value.trim(),
-  complaint:ptComplaint.value.trim(),
-  date:new Date().toLocaleString()
- };
-
- if(!data.name || !data.mobile || !data.complaint){
-  ptStatus.innerText="Please fill required fields";
-  ptStatus.className="text-xs text-red-600";
-  return;
- }
-
- patientCases.push(data);
- localStorage.setItem("patientCases",JSON.stringify(patientCases));
-
- ptStatus.innerText="Details submitted successfully";
- ptStatus.className="text-xs text-green-600";
-
- ptName.value=ptAge.value=ptMobile.value=
- ptAddress.value=ptComplaint.value="";
-};
-
-/* ===== ADMIN LOGIN ===== */
-loginBtn.onclick = () => {
- if(adminPass.value==="admin123"){
-  adminStatus.innerText="Doctor logged in";
-  doctorPanel.classList.remove("hidden");
-  renderCases();
- }else{
-  adminStatus.innerText="Wrong password";
- }
-};
-
-/* ===== RENDER CASES ===== */
-function renderCases(){
- caseList.innerHTML="";
- patientCases.forEach((c,i)=>{
-  caseList.innerHTML+=`
-   <div class="card p-3 mb-2 rounded">
-    <b>${c.name}</b> | Age: ${c.age}<br>
-    📞 ${c.mobile}<br>
-    🏠 ${c.address}<br>
-    <small>${c.date}</small>
-    <p class="text-sm"><b>Complaint:</b> ${c.complaint}</p>
-    <button onclick="makePDF(${i})"
-     class="bg-red-600 text-white px-3 py-1 rounded mt-2">
-     Generate PDF
-    </button>
-   </div>`;
- });
-}
-
-/* ===== PDF ===== */
-function makePDF(i){
- const c=patientCases[i];
- const pdf=new jsPDF();
- pdf.text("Dr. Bhavna – Homeopathic Consultation",10,15);
- pdf.text(`Patient: ${c.name}`,10,30);
- pdf.text(`Age: ${c.age}`,10,38);
- pdf.text(`Mobile: ${c.mobile}`,10,46);
- pdf.text(`Address: ${c.address}`,10,54);
- pdf.text(`Complaint: ${c.complaint}`,10,62);
- pdf.text("For professional homeopathic use only.",10,80);
- pdf.save(c.name+"_case.pdf");
-}
-
 /* ===== FIND REMEDY ===== */
-ask.onclick = () => {
- if(!msg.value) return;
+ask.onclick=()=>{
+ if(!msg.value)return;
  const q=msg.value.toLowerCase();
- let res=medicines.filter(m=>m.keys.some(k=>q.includes(k)));
+ let res=medicines.filter(m=>
+  m.keys.some(k=>q.includes(k)) ||
+  m.key.some(k=>q.includes(k))
+ );
  while(res.length<6) res.push(medicines[res.length]);
  chat.innerHTML=res.slice(0,6).map(m=>`
   <div class="card p-3 rounded">
@@ -206,13 +189,59 @@ ask.onclick = () => {
     ${m.keynote.map(x=>`<li>${x}</li>`).join("")}
    </ul>
    <div class="text-xs mt-1"><b>Symptomatology:</b> ${m.basis}</div>
-  </div>`).join("");
+  </div>
+ `).join("");
 };
 
-clearBtn.onclick = () => {
+clearBtn.onclick=()=>{
  msg.value="";
  chat.innerHTML="";
 };
+
+/* ===== PATIENT SUBMIT ===== */
+let patientCases=JSON.parse(localStorage.getItem("patientCases")||"[]");
+function submitPatient(){
+ if(!ptName.value||!ptMobile.value||!ptComplaint.value){
+  ptStatus.innerText="Please fill required fields";
+  ptStatus.className="text-xs text-red-600";return;
+ }
+ patientCases.push({
+  name:ptName.value,age:ptAge.value,mobile:ptMobile.value,
+  address:ptAddress.value,complaint:ptComplaint.value,
+  date:new Date().toLocaleString()
+ });
+ localStorage.setItem("patientCases",JSON.stringify(patientCases));
+ ptStatus.innerText="Details sent successfully";
+ ptStatus.className="text-xs text-green-600";
+ ptName.value=ptAge.value=ptMobile.value=ptAddress.value=ptComplaint.value="";
+}
+
+/* ===== ADMIN ===== */
+function loginAdmin(){
+ if(adminPass.value==="admin123"){
+  adminStatus.innerText="Doctor logged in";
+  doctorPanel.classList.remove("hidden");
+  caseList.innerHTML=patientCases.map(c=>`
+   <div class="card p-3 mb-2 rounded">
+    <b>${c.name}</b> | Age: ${c.age}<br>
+    📞 ${c.mobile}<br>
+    🏠 ${c.address}<br>
+    <small>${c.date}</small>
+    <p class="text-sm"><b>Complaint:</b> ${c.complaint}</p>
+   </div>`).join("");
+ }else adminStatus.innerText="Wrong password";
+}
+
+/* ===== MIC (HINDI + ENGLISH) ===== */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(SR){
+ const rec=new SR();
+ mic.onclick=()=>{
+  rec.lang=(lang==="hi")?"hi-IN":"en-IN";
+  rec.start();
+ };
+ rec.onresult=e=>msg.value=e.results[0][0].transcript;
+}
 </script>
 
 </body>
