@@ -2,207 +2,117 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<title>Dr. Bhavna – Professional Homeopathy Assistant</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dr. Bhavna – Clinical Homeopathy System</title>
-
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-body{background:#f1f5f9}
-.panel{background:#fff;border-radius:14px;padding:24px;box-shadow:0 10px 25px rgba(0,0,0,.06)}
-.card{background:#f8fafc;border-left:5px solid #2563eb;padding:18px;border-radius:12px;margin-top:16px}
-.badge{background:#e0e7ff;color:#1e3a8a;padding:3px 8px;border-radius:999px;font-size:12px;margin-right:6px}
-canvas{border:1px dashed #94a3b8;border-radius:8px}
+body{font-family:Arial, sans-serif;background:#eef4fb;margin:0}
+header{background:#0f4c75;color:#fff;padding:15px;display:flex;align-items:center}
+header img{height:45px;margin-right:12px}
+.container{padding:20px}
+input,button{padding:10px;margin:5px;width:100%}
+button{background:#0f4c75;color:#fff;border:none;cursor:pointer}
+button:hover{background:#083358}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:15px}
+.card{background:#fff;padding:15px;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,0.1)}
+.card h3{margin:0;color:#0f4c75}
 .hidden{display:none}
+.admin-box{background:#fff;padding:15px;border-radius:8px;margin-bottom:15px}
+small{color:#555}
 </style>
 </head>
 
-<body class="min-h-screen flex flex-col">
+<body>
 
-<!-- HEADER -->
-<header class="bg-white border-b">
- <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-  <h1 id="title" class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-green-600">
-   Dr. Bhavna – Homeopathy Clinical Support
-  </h1>
-  <button onclick="toggleLang()" class="bg-blue-600 text-white px-3 py-1 rounded text-sm">
-   🌐 English / हिंदी
-  </button>
- </div>
+<header>
+<img src="https://i.imgur.com/6XKJZzL.png" alt="Doctor Logo">
+<h2>Dr. Bhavna – Professional Homeopathy Assistant</h2>
 </header>
 
-<!-- DOCTOR LOGIN -->
-<section class="max-w-6xl mx-auto px-6 py-6">
- <div class="panel">
-  <h2 class="font-bold text-red-600 mb-3">🔐 Doctor Login</h2>
-  <input id="docUser" class="border p-3 w-full mb-2 rounded-lg" placeholder="Username">
-  <input id="docPass" type="password" class="border p-3 w-full mb-2 rounded-lg" placeholder="Password">
-  <button onclick="doctorLogin()" class="bg-red-600 text-white py-2 rounded-lg w-full">
-   Login
-  </button>
- </div>
-</section>
+<div class="container">
 
-<!-- MAIN -->
-<main id="mainApp" class="max-w-6xl mx-auto px-6 py-8 grid grid-cols-1 md:grid-cols-2 gap-8 hidden">
+<!-- ADMIN LOGIN -->
+<div class="admin-box">
+<h3>Doctor Login</h3>
+<input type="password" id="adminPass" placeholder="Enter Admin Password">
+<button onclick="loginAdmin()">Login</button>
+<p id="loginStatus"></p>
+</div>
 
-<!-- LEFT -->
-<section class="panel">
- <h2 id="searchTitle" class="font-bold text-lg mb-3">🔍 Symptom Analysis</h2>
+<!-- PATIENT DETAILS (ADMIN ONLY) -->
+<div id="patientSection" class="admin-box hidden">
+<h3>Patient Details</h3>
+<input placeholder="Patient Name">
+<input placeholder="Age">
+<input placeholder="Complaint">
+<button onclick="generatePDF()">Generate PDF</button>
+</div>
 
- <div class="flex gap-2">
-  <textarea id="symptomInput" class="border rounded-lg p-3 w-full h-24"
-   placeholder="Enter symptoms (mind, general, local)"></textarea>
-  <button onclick="voiceSearch()" class="bg-green-600 text-white px-3 rounded-lg">🎤</button>
- </div>
+<!-- CSV UPLOAD -->
+<div class="admin-box">
+<h3>Load Medicines CSV</h3>
+<input type="file" accept=".csv" onchange="loadCSV(event)">
+</div>
 
- <button onclick="searchMedicine()" class="mt-4 bg-blue-600 text-white py-2 rounded-lg w-full">
-  Analyze
- </button>
+<!-- MEDICINE RESULTS -->
+<div id="medicineGrid" class="grid"></div>
 
- <div id="medicineResult"></div>
-</section>
-
-<!-- RIGHT -->
-<section class="panel">
- <h2 id="patientTitle" class="font-bold text-lg mb-3">📝 Patient & Prescription</h2>
-
- <input id="pname" class="border p-3 rounded-lg w-full mb-3" placeholder="Patient Name">
- <input id="page" class="border p-3 rounded-lg w-full mb-3" placeholder="Age">
-
- <!-- COMPLAINT -->
- <textarea id="pcomplaint" class="border rounded-lg p-3 w-full h-24 mb-3"
-  placeholder="Chief Complaint / Case Summary (Doctor notes)"></textarea>
-
- <!-- SIGNATURE -->
- <label class="font-semibold text-sm">✍️ Doctor Signature</label>
- <canvas id="signPad" width="300" height="120"></canvas>
- <button onclick="clearSign()" class="text-sm text-blue-600 mt-1">Clear</button>
-
- <button onclick="generatePDF()" id="pdfBtn"
-  class="mt-6 bg-purple-600 text-white py-2 rounded-lg w-full">
-  📄 Generate Prescription PDF
- </button>
-</section>
-
-</main>
-
-<!-- FOOTER -->
-<footer id="disclaimer" class="bg-white border-t mt-auto text-xs text-gray-500 text-center p-4">
- ⚠ Clinical decision-support tool. Final prescription responsibility lies with qualified homeopathic physician.
-</footer>
+</div>
 
 <script>
-/* ================= LANGUAGE ================= */
-let lang="en";
-function toggleLang(){
- lang=lang==="en"?"hi":"en";
- title.innerText=lang==="en"
-  ?"Dr. Bhavna – Homeopathy Clinical Support"
-  :"डॉ. भावना – होम्योपैथी क्लिनिकल सिस्टम";
- searchTitle.innerText=lang==="en"?"🔍 Symptom Analysis":"🔍 लक्षण विश्लेषण";
- patientTitle.innerText=lang==="en"?"📝 Patient & Prescription":"📝 रोगी विवरण व पर्ची";
- symptomInput.placeholder=lang==="en"?"Enter symptoms":"लक्षण लिखें";
- pcomplaint.placeholder=lang==="en"?"Chief Complaint / Case Summary":"मुख्य शिकायत / केस विवरण";
- disclaimer.innerText=lang==="en"
-  ?"⚠ Clinical decision-support tool. Final prescription responsibility lies with qualified homeopathic physician."
-  :"⚠ यह केवल निर्णय सहायता प्रणाली है। अंतिम उपचार योग्य चिकित्सक द्वारा किया जाएगा।";
+let isAdmin = false;
+let medicines = [];
+
+function loginAdmin(){
+  const pass = document.getElementById("adminPass").value;
+  if(pass === "admin123"){
+    isAdmin = true;
+    document.getElementById("loginStatus").innerText = "Doctor logged in";
+    document.getElementById("patientSection").classList.remove("hidden");
+  }else{
+    document.getElementById("loginStatus").innerText = "Invalid password";
+  }
 }
 
-/* ================= LOGIN ================= */
-function doctorLogin(){
- if(docUser.value==="doctor" && docPass.value==="doctor123"){
-  mainApp.classList.remove("hidden");
-  alert("Doctor logged in");
- } else alert("Invalid login");
+function loadCSV(event){
+  const file = event.target.files[0];
+  const reader = new FileReader();
+  reader.onload = e => parseCSV(e.target.result);
+  reader.readAsText(file);
 }
 
-/* ================= VOICE ================= */
-function voiceSearch(){
- const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
- if(!SR){alert("Voice not supported");return;}
- const rec=new SR();
- rec.lang=lang==="hi"?"hi-IN":"en-IN";
- rec.start();
- rec.onresult=e=>{
-  symptomInput.value=e.results[0][0].transcript;
- };
+function parseCSV(data){
+  const rows = data.split("\n").slice(1);
+  medicines = rows.map(r=>{
+    const c = r.split(",");
+    return {
+      name:c[0],
+      keynotes:c[1],
+      indications:c[2],
+      modalities:c[3],
+      mind:c[4]
+    };
+  }).slice(0,6); // minimum 6 medicines
+  renderMedicines();
 }
 
-/* ================= MEDICINES ================= */
-const medicines=[
- {name:"Belladonna",mind:2,gen:2,loc:3,keys:["fever","throbbing","heat"]},
- {name:"Aconitum",mind:3,gen:2,loc:1,keys:["fear","cold","sudden"]},
- {name:"Bryonia",mind:1,gen:2,loc:3,keys:["movement","pain","dry"]},
- {name:"Rhus Tox",mind:1,gen:2,loc:3,keys:["stiff","motion","rest"]},
- {name:"Arsenicum",mind:3,gen:2,loc:1,keys:["anxiety","burning","weak"]}
-];
-
-let finalSelection=null;
-
-/* ================= REPERTORISATION ================= */
-function searchMedicine(){
- const text=symptomInput.value.toLowerCase();
- medicineResult.innerHTML="";
- finalSelection=null;
-
- medicines.forEach(m=>{
-  let score=0;
-  m.keys.forEach(k=>{if(text.includes(k))score+=m.mind+m.gen+m.loc});
-  m.score=score;
- });
-
- medicines.sort((a,b)=>b.score-a.score).slice(0,5)
- .forEach(m=>{
-  medicineResult.innerHTML+=`
-   <div class="card">
-    <label class="flex items-center gap-2">
-     <input type="radio" name="final" onclick="finalSelection='${m.name}'">
-     <b>${m.name}</b>
-    </label>
-    <div class="text-sm mt-1">Score: ${m.score}</div>
-   </div>`;
- });
+function renderMedicines(){
+  const grid = document.getElementById("medicineGrid");
+  grid.innerHTML = "";
+  medicines.forEach(m=>{
+    grid.innerHTML += `
+      <div class="card">
+        <h3>${m.name}</h3>
+        <p><b>Key-notes:</b> ${m.keynotes}</p>
+        <p><b>Indications:</b> ${m.indications}</p>
+        <p><b>Modalities:</b> <i>${m.modalities}</i></p>
+        <small><b>Mind:</b> ${m.mind}</small>
+      </div>`;
+  });
 }
 
-/* ================= SIGN PAD ================= */
-const canvas=document.getElementById("signPad");
-const ctx=canvas.getContext("2d");
-let draw=false;
-canvas.onmousedown=()=>draw=true;
-canvas.onmouseup=()=>draw=false;
-canvas.onmousemove=e=>{
- if(!draw)return;
- ctx.lineWidth=2;
- ctx.lineTo(e.offsetX,e.offsetY);
- ctx.stroke();
-};
-function clearSign(){ctx.clearRect(0,0,canvas.width,canvas.height);}
-
-/* ================= PDF ================= */
 function generatePDF(){
- if(!finalSelection){alert("Select final remedy");return;}
- const {jsPDF}=window.jspdf;
- const doc=new jsPDF();
- let y=20;
-
- doc.setFontSize(15);
- doc.text("Homeopathic Prescription",20,y); y+=10;
-
- doc.setFontSize(11);
- doc.text(`Patient: ${pname.value}`,20,y); y+=6;
- doc.text(`Age: ${page.value}`,20,y); y+=6;
- doc.text(`Complaint: ${pcomplaint.value}`,20,y); y+=10;
-
- doc.text(`Final Remedy: ${finalSelection}`,20,y); y+=10;
-
- doc.addImage(canvas.toDataURL(),"PNG",20,y,50,20);
- y+=30;
-
- doc.setFontSize(9);
- doc.text("Doctor Signature",20,y);
- doc.save("Prescription.pdf");
+  alert("PDF generation allowed only for logged-in doctor (backend / jsPDF can be added)");
 }
 </script>
 
