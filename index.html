@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dr. Bhavna Homeopathy</title>
+<title>Homeopathy Symptom Checker</title>
 
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -14,9 +14,9 @@ body{background:#f1f5f9}
 .card{background:#f8fafc;border-left:6px solid #2563eb;padding:16px;border-radius:12px;margin-top:14px}
 .badge{background:#e0e7ff;color:#1e3a8a;padding:3px 8px;border-radius:999px;font-size:12px;margin:2px;display:inline-block}
 .logo{
- width:46px;height:46px;border-radius:50%;
+ width:48px;height:48px;border-radius:50%;
  background:linear-gradient(135deg,#2563eb,#16a34a);
- color:#fff;font-weight:bold;font-size:18px;
+ color:#fff;font-weight:bold;font-size:20px;
  display:flex;align-items:center;justify-content:center
 }
 .hidden{display:none}
@@ -29,10 +29,13 @@ body{background:#f1f5f9}
 <header class="bg-white shadow">
  <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
   <div class="flex items-center gap-3">
-   <div class="logo">DB</div>
-   <h1 class="text-xl font-extrabold text-blue-700">
-    Dr. Bhavna Homeopathy
-   </h1>
+   <div class="logo">H+</div>
+   <div>
+    <h1 id="title" class="text-xl font-extrabold text-blue-700">
+     Homeopathy Symptom Checker
+    </h1>
+    <p class="text-xs text-gray-500">Patient self-assessment (doctor approval required)</p>
+   </div>
   </div>
   <button onclick="toggleLang()" class="bg-blue-600 text-white px-3 py-1 rounded text-sm">
    🌐 English / हिंदी
@@ -40,22 +43,10 @@ body{background:#f1f5f9}
  </div>
 </header>
 
-<!-- DOCTOR LOGIN -->
-<section class="max-w-6xl mx-auto px-6 py-6">
- <div class="panel bg-gray-100">
-  <h2 class="font-bold text-red-600 mb-3">🔐 Doctor Admin Login</h2>
-  <input id="adminUser" class="border p-3 rounded-xl w-full mb-2" placeholder="Username">
-  <input id="adminPass" type="password" class="border p-3 rounded-xl w-full mb-2" placeholder="Password">
-  <button onclick="adminLogin()" class="bg-red-600 text-white py-2 rounded-xl w-full">
-   Login
-  </button>
- </div>
-</section>
-
 <!-- MAIN -->
 <main class="max-w-6xl mx-auto px-6 py-8 grid grid-cols-1 md:grid-cols-2 gap-6">
 
-<!-- LEFT : SYMPTOMS (PUBLIC) -->
+<!-- LEFT : SYMPTOMS -->
 <section class="panel">
  <h2 id="symTitle" class="font-bold text-lg mb-3">🔍 Enter Your Symptoms</h2>
 
@@ -72,11 +63,11 @@ body{background:#f1f5f9}
  <div id="medicineResult"></div>
 </section>
 
-<!-- RIGHT : PATIENT DETAILS (DOCTOR ONLY) -->
-<section id="patientPanel" class="panel hidden">
- <h2 id="patTitle" class="font-bold text-lg mb-3">📝 Patient Details (Doctor Only)</h2>
+<!-- RIGHT : PATIENT FORM -->
+<section class="panel">
+ <h2 id="patTitle" class="font-bold text-lg mb-3">📝 Patient Details</h2>
 
- <input id="pname" class="border p-3 rounded-xl w-full mb-2" placeholder="Patient Name">
+ <input id="pname" class="border p-3 rounded-xl w-full mb-2" placeholder="Full Name">
  <input id="page" class="border p-3 rounded-xl w-full mb-2" placeholder="Age">
  <input id="pmobile" class="border p-3 rounded-xl w-full mb-2" placeholder="Mobile Number">
 
@@ -86,12 +77,12 @@ body{background:#f1f5f9}
  <label id="compLabel" class="font-semibold text-sm">Complaint</label>
  <div class="flex gap-2 mt-1">
   <textarea id="pcomplaint" class="border p-3 rounded-xl w-full h-24"
-   placeholder="Describe complaint"></textarea>
+   placeholder="Describe your problem"></textarea>
   <button onclick="voiceInput('complaint')" class="bg-green-600 text-white px-3 rounded-xl">🎤</button>
  </div>
 
  <button onclick="submitCase()" class="mt-4 bg-green-600 text-white py-2 rounded-xl w-full">
-  Generate Patient PDF
+  Submit to Doctor
  </button>
 </section>
 
@@ -108,11 +99,14 @@ body{background:#f1f5f9}
 let lang="en";
 function toggleLang(){
  lang = lang==="en" ? "hi" : "en";
+ title.innerText = lang==="en"
+  ? "Homeopathy Symptom Checker"
+  : "होम्योपैथी लक्षण जांच प्रणाली";
  symTitle.innerText = lang==="en" ? "🔍 Enter Your Symptoms" : "🔍 अपने लक्षण लिखें";
- patTitle.innerText = lang==="en" ? "📝 Patient Details (Doctor Only)" : "📝 रोगी विवरण (केवल डॉक्टर)";
+ patTitle.innerText = lang==="en" ? "📝 Patient Details" : "📝 रोगी विवरण";
  compLabel.innerText = lang==="en" ? "Complaint" : "शिकायत";
  symptomInput.placeholder = lang==="en" ? "fever, headache, anxiety" : "बुखार, सिर दर्द, घबराहट";
- pcomplaint.placeholder = lang==="en" ? "Describe complaint" : "शिकायत बताएं";
+ pcomplaint.placeholder = lang==="en" ? "Describe your problem" : "अपनी समस्या बताएं";
  disclaimer.innerText = lang==="en"
   ? "⚠ This tool provides preliminary homeopathic suggestions only. Final medicine selection must be done by a qualified homeopathic physician."
   : "⚠ यह उपकरण केवल प्रारंभिक होम्योपैथिक सुझाव देता है। अंतिम दवा का चयन योग्य चिकित्सक द्वारा किया जाएगा।";
@@ -132,15 +126,7 @@ function voiceInput(target){
  };
 }
 
-/* ================= LOGIN ================= */
-function adminLogin(){
- if(adminUser.value==="admin" && adminPass.value==="admin123"){
-  patientPanel.classList.remove("hidden");
-  alert("Doctor logged in. Patient section unlocked.");
- } else alert("Invalid credentials");
-}
-
-/* ================= MEDICINES ================= */
+/* ================= MEDICINES DATABASE ================= */
 const medicines=[
 {
  name:"Belladonna",
@@ -191,12 +177,12 @@ function searchMedicine(){
  });
 
  suggested.sort((a,b)=>b.matched.length-a.matched.length);
- suggested = suggested.slice(0,6);
+ suggested = suggested.slice(0,6); // ✅ at least 6
 
  suggested.forEach((m,i)=>{
   medicineResult.innerHTML+=`
    <div class="card">
-    <b>${i+1}. ${m.name}</b>
+    <b>${i+1}. ${m.name}</b><br>
     <div class="mt-1 text-sm">
      <b>Matched Symptoms:</b><br>
      ${m.matched.map(x=>`<span class="badge">${x}</span>`).join("")}
@@ -212,7 +198,7 @@ function searchMedicine(){
  });
 }
 
-/* ================= PDF ================= */
+/* ================= SUBMIT PDF ================= */
 function submitCase(){
  if(!pname.value || !pmobile.value){
   alert("Please fill patient details");
@@ -247,7 +233,7 @@ function submitCase(){
  doc.text("Final medicine selection to be done by doctor.",20,280);
 
  doc.save(`Patient_${Date.now()}.pdf`);
- alert("Patient case PDF generated for doctor review.");
+ alert("Your case has been submitted to doctor.");
 }
 </script>
 
