@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Dr. Bhavna – Professional Homeopathy Bot</title>
 
@@ -10,7 +10,7 @@
 
 <style>
 body{background:#eef4fb}
-.chat{height:50vh;overflow-y:auto}
+.chat{height:45vh;overflow-y:auto}
 .card{background:#f8fafc;border-left:4px solid #2563eb}
 .hidden{display:none}
 </style>
@@ -31,7 +31,7 @@ body{background:#eef4fb}
   </div>
 </header>
 
-<!-- PATIENT SECTION (PUBLIC) -->
+<!-- PATIENT DETAILS (PUBLIC) -->
 <section class="max-w-3xl mx-auto w-full bg-white p-4 mt-3 rounded shadow">
   <h2 class="font-bold text-blue-700 mb-2">Patient Details</h2>
 
@@ -40,7 +40,7 @@ body{background:#eef4fb}
   <input id="ptMobile" class="border w-full px-2 py-1 mb-2" placeholder="Mobile Number">
   <input id="ptAddress" class="border w-full px-2 py-1 mb-2" placeholder="Address">
   <textarea id="ptComplaint" class="border w-full px-2 py-1 mb-2"
-    placeholder="Present Complaint"></textarea>
+    placeholder="Present Complaint / Symptoms"></textarea>
 
   <button onclick="submitPatient()"
     class="bg-green-600 text-white px-4 py-2 rounded w-full">
@@ -63,14 +63,14 @@ body{background:#eef4fb}
   </div>
 </section>
 
-<!-- DOCTOR VIEW (ADMIN ONLY) -->
+<!-- DOCTOR VIEW -->
 <section id="doctorPanel"
  class="max-w-3xl mx-auto w-full bg-white p-4 mt-3 rounded shadow hidden">
-  <h2 class="font-bold text-red-600 mb-3">Submitted Patient Complaints</h2>
+  <h2 class="font-bold text-red-600 mb-3">Submitted Patient Cases</h2>
   <div id="caseList"></div>
 </section>
 
-<!-- CHAT -->
+<!-- CHAT / MEDICINE RESULTS -->
 <main id="chat"
  class="chat max-w-3xl mx-auto w-full p-4 flex flex-col gap-3">
 </main>
@@ -80,11 +80,11 @@ body{background:#eef4fb}
   <div class="max-w-3xl mx-auto w-full">
     <input id="msg"
       class="border rounded w-full px-3 py-2 mb-2"
-      placeholder="Describe symptoms…"/>
+      placeholder="Describe symptoms (fever, pain worse motion, anxiety)…"/>
     <div class="flex justify-between gap-2">
       <button id="ask"
         class="bg-blue-600 text-white px-4 py-2 rounded w-full">
-        Ask
+        Find Remedies
       </button>
       <button id="mic"
         class="bg-green-600 text-white px-4 py-2 rounded">
@@ -98,10 +98,49 @@ body{background:#eef4fb}
 const { jsPDF } = window.jspdf;
 let isAdmin=false;
 
-/* ================= PATIENT STORAGE ================= */
+/* ===== 6 CLASSICAL MEDICINES ===== */
+const medicines=[
+{
+ name:"Belladonna",
+ keys:["fever","throbbing","heat","red","light"],
+ keynote:["Sudden violent onset","High fever","Throbbing pains","Red hot face"],
+ basis:"Acute inflammatory conditions with sudden congestion"
+},
+{
+ name:"Bryonia alba",
+ keys:["pain","motion","dry","thirst"],
+ keynote:["Pain worse motion","Dry mouth","Great thirst","Wants rest"],
+ basis:"Serous inflammations; worse from slightest movement"
+},
+{
+ name:"Arsenicum album",
+ keys:["burning","anxiety","weak","restless"],
+ keynote:["Burning pains better heat","Anxiety","Restlessness","Prostration"],
+ basis:"Exhaustive states with anxiety and collapse"
+},
+{
+ name:"Pulsatilla",
+ keys:["cold","cough","changeable","weep"],
+ keynote:["Changeable symptoms","Bland discharge","Better open air","Mild nature"],
+ basis:"Venous congestion in gentle patients"
+},
+{
+ name:"Nux vomica",
+ keys:["constipation","gas","irritable","overwork"],
+ keynote:["Irritable","Constipation with urging","Chilly","Overworked"],
+ basis:"Functional gastric and hepatic disturbances"
+},
+{
+ name:"Rhus toxicodendron",
+ keys:["stiff","rest","motion","joint"],
+ keynote:["Stiffness first motion","Better motion","Worse rest","Rheumatic pains"],
+ basis:"Rheumatic and ligamentous affections"
+}
+];
+
+/* ===== PATIENT STORAGE ===== */
 let patientCases = JSON.parse(localStorage.getItem("patientCases") || "[]");
 
-/* ===== PATIENT SUBMIT ===== */
 function submitPatient(){
  const data={
   name:ptName.value,
@@ -111,24 +150,19 @@ function submitPatient(){
   complaint:ptComplaint.value,
   date:new Date().toLocaleString()
  };
-
  if(!data.name||!data.mobile||!data.complaint){
   ptStatus.innerText="Please fill required fields";
   ptStatus.className="text-xs text-red-600";
   return;
  }
-
  patientCases.push(data);
  localStorage.setItem("patientCases",JSON.stringify(patientCases));
-
  ptStatus.innerText="Details sent to doctor successfully";
  ptStatus.className="text-xs text-green-600";
-
- ptName.value=ptAge.value=ptMobile.value=
- ptAddress.value=ptComplaint.value="";
+ ptName.value=ptAge.value=ptMobile.value=ptAddress.value=ptComplaint.value="";
 }
 
-/* ===== ADMIN LOGIN ===== */
+/* ===== ADMIN ===== */
 function loginAdmin(){
  if(adminPass.value==="admin123"){
   isAdmin=true;
@@ -140,7 +174,6 @@ function loginAdmin(){
  }
 }
 
-/* ===== SHOW CASES ===== */
 function renderCases(){
  caseList.innerHTML="";
  patientCases.forEach((c,i)=>{
@@ -155,10 +188,35 @@ function renderCases(){
      class="bg-red-600 text-white px-3 py-1 rounded mt-2">
      Generate PDF
     </button>
-   </div>
-  `;
+   </div>`;
  });
 }
+
+/* ===== CHAT MEDICINE MATCHING ===== */
+const chat=document.getElementById("chat");
+function bubble(html){
+ const d=document.createElement("div");
+ d.className="bg-white p-3 rounded border";
+ d.innerHTML=html;
+ chat.append(d);
+ chat.scrollTop=chat.scrollHeight;
+}
+
+ask.onclick=()=>{
+ if(!msg.value)return;
+ const q=msg.value.toLowerCase();
+ let res=medicines.filter(m=>m.keys.some(k=>q.includes(k)));
+ while(res.length<6)res.push(medicines[res.length]);
+ let html=res.slice(0,6).map(m=>`
+  <div class="card p-3 rounded mb-2">
+   <b>${m.name}</b>
+   <ul class="list-disc ml-4 text-sm">
+    ${m.keynote.map(x=>`<li>${x}</li>`).join("")}
+   </ul>
+   <div class="text-xs mt-1"><b>Symptomatology:</b> ${m.basis}</div>
+  </div>`).join("");
+ bubble(html);
+};
 
 /* ===== PDF ===== */
 function makePDF(i){
