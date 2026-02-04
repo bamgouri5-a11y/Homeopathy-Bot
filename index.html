@@ -6,28 +6,29 @@
 <title>Dr. Bhavna – Professional Homeopathy Chatbot</title>
 
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.3/dist/tailwind.min.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
 body{background:#eef4fb}
 .header{background:#fff;padding:16px;display:flex;gap:14px;align-items:center;justify-content:center;
 box-shadow:0 2px 10px rgba(0,0,0,.08)}
 .header img{width:50px;height:50px;border-radius:10px}
-.chat{height:58vh;overflow-y:auto;padding:18px}
+.chat{height:55vh;overflow-y:auto;padding:18px}
 .row{display:flex;gap:10px;margin-bottom:16px;max-width:92%}
 .bot{align-self:flex-start}
 .user{align-self:flex-end;flex-direction:row-reverse}
 .avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-font-weight:bold;color:#fff;font-size:14px}
+font-weight:bold;color:#fff}
 .botA{background:#16a34a}
 .userA{background:#2563eb}
-.bubble{background:#fff;padding:14px 16px;border-radius:14px;border:1px solid #e5e7eb;
-font-size:14px;line-height:1.6}
+.bubble{background:#fff;padding:14px 16px;border-radius:14px;border:1px solid #e5e7eb;font-size:14px}
 .user .bubble{background:#dbeafe}
 .card{background:#f8fafc;border-left:4px solid #2563eb;padding:12px 14px;border-radius:10px;margin-top:12px}
-.card h4{font-weight:700;color:#1f2937}
-.card ul{padding-left:18px;font-size:13px;color:#374151}
-.card p{font-size:12px;color:#4b5563;margin-top:6px}
-.inputbar{background:#fff;padding:12px;position:sticky;bottom:0;box-shadow:0 -2px 10px rgba(0,0,0,.08)}
+.card h4{font-weight:700}
+.card ul{padding-left:18px;font-size:13px}
+.inputbar{background:#fff;padding:12px;position:sticky;bottom:0;
+box-shadow:0 -2px 10px rgba(0,0,0,.08)}
+.hidden{display:none}
 </style>
 </head>
 
@@ -37,106 +38,141 @@ font-size:14px;line-height:1.6}
 <div class="header">
   <img src="bot.png">
   <div>
-    <div class="text-lg font-bold text-blue-700">
-      Dr. Bhavna – Homeopathy Consultation Bot
+    <div class="text-lg font-bold text-blue-700">Dr. Bhavna – Homeopathy Bot</div>
+    <div class="text-xs text-gray-500">Classical • Symptomatology Based</div>
+  </div>
+</div>
+
+<!-- ADMIN + LANGUAGE -->
+<div class="max-w-3xl mx-auto w-full p-3 bg-white shadow mt-2 rounded">
+  <div class="flex justify-between items-center">
+    <div>
+      <input id="adminPass" type="password" placeholder="Doctor password"
+        class="border px-2 py-1 rounded">
+      <button onclick="loginAdmin()"
+        class="bg-blue-600 text-white px-3 py-1 rounded">Login</button>
+      <span id="adminStatus" class="text-xs ml-2"></span>
     </div>
-    <div class="text-xs text-gray-500">
-      Classical • Symptomatology-Based Guidance
-    </div>
+    <button onclick="toggleLang()"
+      class="bg-green-600 text-white px-3 py-1 rounded">
+      हिंदी / English
+    </button>
   </div>
 </div>
 
 <!-- CHAT -->
 <div id="chat" class="chat max-w-3xl mx-auto flex flex-col"></div>
 
+<!-- PATIENT (ADMIN ONLY) -->
+<div id="patientBox" class="max-w-3xl mx-auto w-full bg-white p-3 mt-2 rounded shadow hidden">
+  <input id="pName" class="border px-2 py-1 w-full mb-1" placeholder="Patient Name">
+  <input id="pAge" class="border px-2 py-1 w-full mb-1" placeholder="Age">
+  <input id="pProb" class="border px-2 py-1 w-full mb-2" placeholder="Complaint">
+  <button onclick="makePDF()" class="bg-red-600 text-white px-4 py-2 rounded">
+    Generate PDF
+  </button>
+</div>
+
 <!-- INPUT -->
 <div class="inputbar max-w-3xl mx-auto w-full">
   <input id="msg" class="border rounded w-full px-3 py-2 mb-2"
-    placeholder="Describe symptoms (fever, pain worse motion, anxiety)…">
-
-  <div class="flex justify-between items-center">
-    <div class="space-x-2">
-      <button id="ask" class="bg-blue-600 text-white px-4 py-2 rounded">Ask Dr</button>
-      <button id="clear" class="bg-gray-500 text-white px-4 py-2 rounded">Clear</button>
-    </div>
+    placeholder="Describe symptoms…">
+  <div class="flex justify-between">
+    <button id="ask" class="bg-blue-600 text-white px-4 py-2 rounded">Ask</button>
     <button id="mic" class="bg-green-600 text-white px-4 py-2 rounded">🎤</button>
   </div>
 </div>
 
-<footer class="bg-white border-t p-4 text-center text-xs text-gray-600">
-<strong>Disclaimer:</strong> Informational guidance only. Consult physician for treatment.
+<footer class="bg-white border-t p-3 text-center text-xs text-gray-600">
+Informational guidance only • Consult physician for treatment
 </footer>
 
 <script>
-/* ================= CSV LOADER ================= */
+const { jsPDF } = window.jspdf;
+let isAdmin=false;
+let lang="en";
 let medicines=[];
 
-fetch("medicines.csv")
-.then(r=>r.text())
-.then(parseCSV);
+/* ================= ADMIN ================= */
+function loginAdmin(){
+ if(adminPass.value==="admin123"){
+  isAdmin=true;
+  adminStatus.innerText="Doctor logged in";
+  patientBox.classList.remove("hidden");
+ }else{
+  adminStatus.innerText="Invalid password";
+ }
+}
 
-function parseCSV(data){
- const lines=data.trim().split("\n").slice(1);
- medicines=lines.map(l=>{
-  const [name,keys,keynotes,basis]=l.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+/* ================= LANGUAGE ================= */
+function toggleLang(){
+ lang=lang==="en"?"hi":"en";
+ msg.placeholder=lang==="hi"
+  ?"अपने लक्षण लिखें (जैसे बुखार, दर्द, बेचैनी)…"
+  :"Describe symptoms…";
+}
+
+/* ================= CSV ================= */
+fetch("medicines.csv").then(r=>r.text()).then(d=>{
+ medicines=d.trim().split("\n").slice(1).map(l=>{
+  const [n,k,kn,b]=l.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
   return{
-    name:name,
-    keys:keys.replace(/"/g,"").split("|"),
-    keynote:keynotes.replace(/"/g,"").split(";"),
-    basis:basis.replace(/"/g,"")
+   name:n,
+   keys:k.replace(/"/g,"").split("|"),
+   keynote:kn.replace(/"/g,"").split(";"),
+   basis:b.replace(/"/g,"")
   };
  });
-}
+});
 
 /* ================= CHAT ================= */
 const chat=document.getElementById("chat");
-const msg=document.getElementById("msg");
-
-function add(type,text,html=false){
- const row=document.createElement("div");
- row.className="row "+type;
- const a=document.createElement("div");
- a.className="avatar "+(type=="bot"?"botA":"userA");
- a.innerText=type=="bot"?"Dr":"You";
- const b=document.createElement("div");
- b.className="bubble";
- html?b.innerHTML=text:b.innerText=text;
- row.append(a,b);chat.append(row);
- chat.scrollTop=chat.scrollHeight;
+function add(t,txt,html=false){
+ const r=document.createElement("div");
+ r.className="row "+t;
+ r.innerHTML=`<div class="avatar ${t=="bot"?"botA":"userA"}">${t=="bot"?"Dr":"You"}</div>
+ <div class="bubble">${html?txt:txt}</div>`;
+ chat.append(r);chat.scrollTop=chat.scrollHeight;
 }
 
-document.getElementById("ask").onclick=()=>{
- if(!msg.value.trim()||!medicines.length)return;
- const input=msg.value.toLowerCase();
- add("user",msg.value);
- msg.value="";
-
- let matches=medicines.filter(m=>m.keys.some(k=>input.includes(k)));
- if(matches.length<6){
-  medicines.forEach(m=>{
-   if(!matches.includes(m)&&matches.length<6)matches.push(m);
-  });
- }
-
- let html="";
- matches.slice(0,6).forEach(m=>{
-  html+=`
-   <div class="card">
-    <h4>${m.name}</h4>
-    <ul>${m.keynote.map(k=>`<li>${k}</li>`).join("")}</ul>
-    <p><b>Symptomatology:</b> ${m.basis}</p>
-   </div>`;
+ask.onclick=()=>{
+ if(!msg.value||!medicines.length)return;
+ const q=msg.value.toLowerCase();
+ add("user",msg.value);msg.value="";
+ let res=medicines.filter(m=>m.keys.some(k=>q.includes(k)));
+ while(res.length<6)res.push(medicines[res.length]);
+ let h="";
+ res.slice(0,6).forEach(m=>{
+  h+=`<div class="card">
+  <h4>${m.name}</h4>
+  <ul>${m.keynote.map(x=>`<li>${x}</li>`).join("")}</ul>
+  <p class="text-xs"><b>Symptomatology:</b> ${m.basis}</p>
+  </div>`;
  });
- add("bot",html,true);
+ add("bot",h,true);
 };
 
-document.getElementById("clear").onclick=()=>chat.innerHTML="";
+/* ================= PDF ================= */
+function makePDF(){
+ if(!isAdmin)return;
+ const pdf=new jsPDF();
+ pdf.text("Dr. Bhavna – Homeopathic Prescription",10,15);
+ pdf.text(`Patient: ${pName.value}`,10,30);
+ pdf.text(`Age: ${pAge.value}`,10,38);
+ pdf.text(`Complaint: ${pProb.value}`,10,46);
+ let y=60;
+ medicines.slice(0,6).forEach(m=>{
+  pdf.text(`• ${m.name}`,10,y);y+=7;
+ });
+ pdf.text("For professional homeopathic use only.",10,y+10);
+ pdf.save("Prescription.pdf");
+}
 
 /* ================= MIC ================= */
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 if(SR){
  const r=new SR();r.lang="en-IN";
- document.getElementById("mic").onclick=()=>r.start();
+ mic.onclick=()=>r.start();
  r.onresult=e=>msg.value=e.results[0][0].transcript;
 }
 </script>
