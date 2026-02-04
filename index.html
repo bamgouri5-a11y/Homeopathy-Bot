@@ -1,33 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dr. Bhavna – Professional Homeopathy Chatbot</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Dr. Bhavna – Professional Homeopathy Bot</title>
 
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.3/dist/tailwind.min.css" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
 body{background:#eef4fb}
-.header{background:#fff;padding:16px;display:flex;gap:14px;align-items:center;justify-content:center;
-box-shadow:0 2px 10px rgba(0,0,0,.08)}
-.header img{width:50px;height:50px;border-radius:10px}
-.chat{height:55vh;overflow-y:auto;padding:18px}
-.row{display:flex;gap:10px;margin-bottom:16px;max-width:92%}
-.bot{align-self:flex-start}
-.user{align-self:flex-end;flex-direction:row-reverse}
-.avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-font-weight:bold;color:#fff}
-.botA{background:#16a34a}
-.userA{background:#2563eb}
-.bubble{background:#fff;padding:14px 16px;border-radius:14px;border:1px solid #e5e7eb;font-size:14px}
-.user .bubble{background:#dbeafe}
-.card{background:#f8fafc;border-left:4px solid #2563eb;padding:12px 14px;border-radius:10px;margin-top:12px}
-.card h4{font-weight:700}
-.card ul{padding-left:18px;font-size:13px}
-.inputbar{background:#fff;padding:12px;position:sticky;bottom:0;
-box-shadow:0 -2px 10px rgba(0,0,0,.08)}
+.chat{height:55vh;overflow-y:auto}
+.card{background:#f8fafc;border-left:4px solid #2563eb}
 .hidden{display:none}
 </style>
 </head>
@@ -35,56 +19,71 @@ box-shadow:0 -2px 10px rgba(0,0,0,.08)}
 <body class="flex flex-col min-h-screen">
 
 <!-- HEADER -->
-<div class="header">
-  <img src="bot.png">
+<header class="bg-white shadow p-4 flex items-center justify-center gap-3">
+  <img src="bot.png" class="w-12 h-12 rounded-lg" />
   <div>
-    <div class="text-lg font-bold text-blue-700">Dr. Bhavna – Homeopathy Bot</div>
-    <div class="text-xs text-gray-500">Classical • Symptomatology Based</div>
+    <h1 class="text-lg font-bold text-blue-700">
+      Dr. Bhavna – Homeopathy Consultation Bot
+    </h1>
+    <p class="text-xs text-gray-500">
+      Classical • Symptomatology Based Guidance
+    </p>
   </div>
-</div>
+</header>
 
-<!-- ADMIN + LANGUAGE -->
-<div class="max-w-3xl mx-auto w-full p-3 bg-white shadow mt-2 rounded">
-  <div class="flex justify-between items-center">
-    <div>
+<!-- ADMIN + LANG -->
+<section class="max-w-3xl mx-auto w-full bg-white p-3 mt-2 rounded shadow">
+  <div class="flex flex-col sm:flex-row gap-2 justify-between items-center">
+    <div class="flex gap-2 items-center">
       <input id="adminPass" type="password" placeholder="Doctor password"
-        class="border px-2 py-1 rounded">
+        class="border px-2 py-1 rounded text-sm"/>
       <button onclick="loginAdmin()"
-        class="bg-blue-600 text-white px-3 py-1 rounded">Login</button>
-      <span id="adminStatus" class="text-xs ml-2"></span>
+        class="bg-blue-600 text-white px-3 py-1 rounded text-sm">
+        Login
+      </button>
+      <span id="adminStatus" class="text-xs"></span>
     </div>
     <button onclick="toggleLang()"
-      class="bg-green-600 text-white px-3 py-1 rounded">
+      class="bg-green-600 text-white px-3 py-1 rounded text-sm">
       हिंदी / English
     </button>
   </div>
-</div>
+</section>
 
 <!-- CHAT -->
-<div id="chat" class="chat max-w-3xl mx-auto flex flex-col"></div>
+<main id="chat"
+ class="chat max-w-3xl mx-auto w-full p-4 flex flex-col gap-3">
+</main>
 
 <!-- PATIENT (ADMIN ONLY) -->
-<div id="patientBox" class="max-w-3xl mx-auto w-full bg-white p-3 mt-2 rounded shadow hidden">
-  <input id="pName" class="border px-2 py-1 w-full mb-1" placeholder="Patient Name">
-  <input id="pAge" class="border px-2 py-1 w-full mb-1" placeholder="Age">
-  <input id="pProb" class="border px-2 py-1 w-full mb-2" placeholder="Complaint">
-  <button onclick="makePDF()" class="bg-red-600 text-white px-4 py-2 rounded">
+<section id="patientBox"
+ class="max-w-3xl mx-auto w-full bg-white p-3 mt-2 rounded shadow hidden">
+  <input id="pName" class="border w-full px-2 py-1 mb-1" placeholder="Patient Name"/>
+  <input id="pAge" class="border w-full px-2 py-1 mb-1" placeholder="Age"/>
+  <input id="pProb" class="border w-full px-2 py-1 mb-2" placeholder="Complaint"/>
+  <button onclick="makePDF()"
+    class="bg-red-600 text-white px-4 py-2 rounded w-full">
     Generate PDF
   </button>
-</div>
+</section>
 
 <!-- INPUT -->
-<div class="inputbar max-w-3xl mx-auto w-full">
-  <input id="msg" class="border rounded w-full px-3 py-2 mb-2"
-    placeholder="Describe symptoms…">
-  <div class="flex justify-between">
-    <button id="ask" class="bg-blue-600 text-white px-4 py-2 rounded">Ask</button>
-    <button id="mic" class="bg-green-600 text-white px-4 py-2 rounded">🎤</button>
+<footer class="bg-white shadow p-3 sticky bottom-0">
+  <div class="max-w-3xl mx-auto w-full">
+    <input id="msg"
+      class="border rounded w-full px-3 py-2 mb-2"
+      placeholder="Describe symptoms…"/>
+    <div class="flex justify-between gap-2">
+      <button id="ask"
+        class="bg-blue-600 text-white px-4 py-2 rounded w-full">
+        Ask
+      </button>
+      <button id="mic"
+        class="bg-green-600 text-white px-4 py-2 rounded">
+        🎤
+      </button>
+    </div>
   </div>
-</div>
-
-<footer class="bg-white border-t p-3 text-center text-xs text-gray-600">
-Informational guidance only • Consult physician for treatment
 </footer>
 
 <script>
@@ -93,27 +92,32 @@ let isAdmin=false;
 let lang="en";
 let medicines=[];
 
-/* ================= ADMIN ================= */
-function loginAdmin(){
- if(adminPass.value==="admin123"){
-  isAdmin=true;
-  adminStatus.innerText="Doctor logged in";
-  patientBox.classList.remove("hidden");
- }else{
-  adminStatus.innerText="Invalid password";
- }
-}
+/* ===== FALLBACK MEDICINES (SAFE) ===== */
+const fallback=[
+{name:"Belladonna",keys:["fever","throbbing","heat"],
+keynote:["Sudden onset","High fever","Throbbing pain"],
+basis:"Acute congestion"},
+{name:"Bryonia",keys:["motion","pain","dry"],
+keynote:["Worse motion","Dry mouth","Thirst"],
+basis:"Serous inflammation"},
+{name:"Arsenicum",keys:["burning","anxiety"],
+keynote:["Burning pains","Anxiety","Restlessness"],
+basis:"Exhaustion states"},
+{name:"Pulsatilla",keys:["cold","cough"],
+keynote:["Changeable","Better open air"],
+basis:"Venous congestion"},
+{name:"Nux vomica",keys:["constipation","gas"],
+keynote:["Irritable","Chilly","Overworked"],
+basis:"Gastric disorder"},
+{name:"Rhus tox",keys:["stiff","motion"],
+keynote:["Better motion","Worse rest"],
+basis:"Rheumatism"}
+];
 
-/* ================= LANGUAGE ================= */
-function toggleLang(){
- lang=lang==="en"?"hi":"en";
- msg.placeholder=lang==="hi"
-  ?"अपने लक्षण लिखें (जैसे बुखार, दर्द, बेचैनी)…"
-  :"Describe symptoms…";
-}
-
-/* ================= CSV ================= */
-fetch("medicines.csv").then(r=>r.text()).then(d=>{
+/* ===== CSV LOAD ===== */
+fetch("medicines.csv")
+.then(r=>r.text())
+.then(d=>{
  medicines=d.trim().split("\n").slice(1).map(l=>{
   const [n,k,kn,b]=l.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
   return{
@@ -123,36 +127,59 @@ fetch("medicines.csv").then(r=>r.text()).then(d=>{
    basis:b.replace(/"/g,"")
   };
  });
-});
+})
+.catch(()=>medicines=fallback);
 
-/* ================= CHAT ================= */
+/* ===== ADMIN ===== */
+function loginAdmin(){
+ if(adminPass.value==="admin123"){
+  isAdmin=true;
+  adminStatus.textContent="Doctor logged in";
+  patientBox.classList.remove("hidden");
+ }else{
+  adminStatus.textContent="Wrong password";
+ }
+}
+
+/* ===== LANGUAGE ===== */
+function toggleLang(){
+ lang=lang==="en"?"hi":"en";
+ msg.placeholder=lang==="hi"
+  ?"अपने लक्षण लिखें (बुखार, दर्द, बेचैनी)…"
+  :"Describe symptoms…";
+}
+
+/* ===== CHAT ===== */
 const chat=document.getElementById("chat");
-function add(t,txt,html=false){
- const r=document.createElement("div");
- r.className="row "+t;
- r.innerHTML=`<div class="avatar ${t=="bot"?"botA":"userA"}">${t=="bot"?"Dr":"You"}</div>
- <div class="bubble">${html?txt:txt}</div>`;
- chat.append(r);chat.scrollTop=chat.scrollHeight;
+function bubble(who,html){
+ const d=document.createElement("div");
+ d.className=`max-w-[90%] p-3 rounded border ${
+  who==="bot"?"bg-white":"bg-blue-100 self-end"
+ }`;
+ d.innerHTML=html;
+ chat.append(d);
+ chat.scrollTop=chat.scrollHeight;
 }
 
 ask.onclick=()=>{
- if(!msg.value||!medicines.length)return;
+ if(!msg.value)return;
  const q=msg.value.toLowerCase();
- add("user",msg.value);msg.value="";
+ bubble("user",msg.value);
+ msg.value="";
  let res=medicines.filter(m=>m.keys.some(k=>q.includes(k)));
- while(res.length<6)res.push(medicines[res.length]);
- let h="";
- res.slice(0,6).forEach(m=>{
-  h+=`<div class="card">
-  <h4>${m.name}</h4>
-  <ul>${m.keynote.map(x=>`<li>${x}</li>`).join("")}</ul>
-  <p class="text-xs"><b>Symptomatology:</b> ${m.basis}</p>
-  </div>`;
- });
- add("bot",h,true);
+ while(res.length<6)res.push(medicines[res.length]||fallback[res.length]);
+ let html=res.slice(0,6).map(m=>`
+  <div class="card p-3 rounded mb-2">
+   <b>${m.name}</b>
+   <ul class="list-disc ml-4 text-sm">
+    ${m.keynote.map(x=>`<li>${x}</li>`).join("")}
+   </ul>
+   <div class="text-xs mt-1"><b>Basis:</b> ${m.basis}</div>
+  </div>`).join("");
+ bubble("bot",html);
 };
 
-/* ================= PDF ================= */
+/* ===== PDF ===== */
 function makePDF(){
  if(!isAdmin)return;
  const pdf=new jsPDF();
@@ -164,11 +191,11 @@ function makePDF(){
  medicines.slice(0,6).forEach(m=>{
   pdf.text(`• ${m.name}`,10,y);y+=7;
  });
- pdf.text("For professional homeopathic use only.",10,y+10);
+ pdf.text("For professional use only.",10,y+10);
  pdf.save("Prescription.pdf");
 }
 
-/* ================= MIC ================= */
+/* ===== MIC ===== */
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 if(SR){
  const r=new SR();r.lang="en-IN";
