@@ -3,105 +3,143 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🌿 Dr. Bhavna Homeopathy Boat </title>
+<title>Dr. Bhavna – Homeopathy Clinical System</title>
 
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-body{background:#eef4fb}
-.card{background:#f8fafc;border-left:5px solid #2563eb;padding:12px;border-radius:10px;margin-top:12px}
-.logoBox{width:50px;height:50px;border-radius:8px;overflow:hidden}
+body{background:#f1f5f9}
+.panel{
+ background:#ffffff;
+ border-radius:14px;
+ padding:24px;
+ box-shadow:0 10px 25px rgba(0,0,0,0.05)
+}
+.card{
+ background:#f8fafc;
+ border-left:5px solid #2563eb;
+ padding:18px;
+ border-radius:12px;
+ margin-top:16px
+}
+.badge{
+ background:#e0e7ff;
+ color:#1e3a8a;
+ padding:3px 8px;
+ border-radius:999px;
+ font-size:12px;
+ margin-right:6px;
+ margin-top:4px;
+ display:inline-block
+}
+.section-title{
+ font-size:18px;
+ font-weight:700;
+ margin-bottom:12px;
+ color:#0f172a
+}
 </style>
 </head>
 
 <body class="min-h-screen flex flex-col">
 
 <!-- HEADER -->
-<header class="bg-white shadow p-4 flex items-center gap-3">
- <div class="logoBox">
-  <img id="clinicLogo" class="w-full h-full object-cover hidden">
+<header class="bg-white border-b">
+ <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+  <h1 class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-green-600">
+   Dr. Bhavna – Homeopathy 
+  </h1>
+  <span class="text-sm text-gray-500">Doctor Use Only</span>
  </div>
- <h1 class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-green-600">
-  Dr. Bhavna Homeopathy System
- </h1>
 </header>
 
-<!-- DOCTOR LOGIN -->
-<section class="max-w-3xl mx-auto mt-6 bg-gray-100 p-4 rounded shadow">
- <h2 class="font-bold text-red-600 mb-2">🔐 Doctor Login</h2>
- <input id="docUser" class="border p-2 w-full mb-2 rounded" placeholder="Username">
- <input id="docPass" type="password" class="border p-2 w-full mb-2 rounded" placeholder="Password">
- <button onclick="doctorLogin()" class="bg-red-600 text-white py-2 rounded w-full">Login</button>
-</section>
+<!-- MAIN -->
+<main class="max-w-6xl mx-auto px-6 py-8 grid grid-cols-1 md:grid-cols-2 gap-8">
 
-<!-- BRANDING -->
-<section id="branding" class="max-w-3xl mx-auto mt-6 bg-white p-4 rounded shadow hidden">
- <h2 class="font-bold mb-2">🏥 Clinic Branding</h2>
- <input type="file" accept="image/*" onchange="uploadLogo(event)">
-</section>
+ <!-- LEFT COLUMN -->
+ <section class="panel">
+  <div class="section-title">🔍 Symptom-Based Medicine Search</div>
 
-<!-- SEARCH -->
-<section class="max-w-3xl mx-auto mt-6 bg-white p-5 rounded shadow">
- <h2 class="font-bold mb-2">🔍 Search Medicine</h2>
- <input id="symptomInput" class="border p-2 w-full rounded mb-2" placeholder="Enter symptoms">
- <button onclick="searchMedicine()" class="bg-blue-600 text-white py-2 rounded w-full">Search</button>
- <div id="medicineResult"></div>
-</section>
+  <textarea id="symptomInput"
+   class="border rounded-lg p-3 w-full h-24 focus:outline-none focus:ring-2 focus:ring-blue-500"
+   placeholder="Enter symptoms (e.g. fever, throbbing headache, anxiety, burning)"></textarea>
 
-<!-- APPOINTMENT -->
-<section class="max-w-3xl mx-auto mt-6 bg-white p-5 rounded shadow">
- <h2 class="font-bold mb-2">📝 Patient Details</h2>
- <input id="pname" class="border p-2 w-full mb-2 rounded" placeholder="Patient Name">
- <input id="page" class="border p-2 w-full mb-2 rounded" placeholder="Age">
- <select id="ptype" class="border p-2 w-full mb-2 rounded">
-  <option value="acute">Acute</option>
-  <option value="chronic">Chronic</option>
- </select>
- <textarea id="pcomplaint" class="border p-2 w-full mb-2 rounded" placeholder="Main Complaint"></textarea>
+  <button onclick="searchMedicine()"
+   class="mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg w-full">
+   Analyze Symptoms
+  </button>
 
- <button onclick="generatePDF()" class="bg-purple-600 text-white py-2 rounded w-full">
-  📄 Generate Prescription PDF
- </button>
-</section>
+  <div id="medicineResult" class="mt-6"></div>
+ </section>
+
+ <!-- RIGHT COLUMN -->
+ <section class="panel">
+  <div class="section-title">📝 Patient & Prescription</div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+   <input id="pname" class="border p-3 rounded-lg" placeholder="Patient Name">
+   <input id="page" class="border p-3 rounded-lg" placeholder="Age">
+  </div>
+
+  <select id="ptype" class="border p-3 rounded-lg w-full mt-4">
+   <option value="acute">Acute Case</option>
+   <option value="chronic">Chronic Case</option>
+  </select>
+
+  <textarea id="pcomplaint"
+   class="border rounded-lg p-3 w-full h-20 mt-4"
+   placeholder="Chief complaint / case summary"></textarea>
+
+  <button onclick="generatePDF()"
+   class="mt-6 bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg w-full">
+   📄 Generate Prescription PDF
+  </button>
+ </section>
+
+</main>
 
 <!-- FOOTER -->
-<footer class="mt-auto bg-white text-center text-xs text-gray-500 p-4">
- ⚠ Disclaimer: Educational support only. Final prescription by qualified homeopathic physician.
+<footer class="bg-white border-t mt-auto">
+ <div class="max-w-6xl mx-auto px-6 py-4 text-xs text-gray-500 text-center">
+  ⚠ This software is a clinical decision-support tool. Final remedy selection, potency and repetition
+  are the sole responsibility of the qualified homeopathic physician.
+ </div>
 </footer>
 
 <script>
-/* ================= DOCTOR LOGIN ================= */
-let doctorName="Dr. Bhavna";
-function doctorLogin(){
- if(docUser.value==="doctor" && docPass.value==="doctor123"){
-  doctorName="Dr. Bhavna (Homeopath)";
-  branding.classList.remove("hidden");
-  alert("Doctor logged in");
- } else alert("Invalid credentials");
-}
-
-/* ================= LOGO UPLOAD ================= */
-function uploadLogo(e){
- const file=e.target.files[0];
- const reader=new FileReader();
- reader.onload=()=>{
-  localStorage.setItem("clinicLogo",reader.result);
-  clinicLogo.src=reader.result;
-  clinicLogo.classList.remove("hidden");
- };
- reader.readAsDataURL(file);
-}
-const savedLogo=localStorage.getItem("clinicLogo");
-if(savedLogo){clinicLogo.src=savedLogo;clinicLogo.classList.remove("hidden");}
-
-/* ================= MEDICINES ================= */
+/* ================= MEDICINE DATA ================= */
 const medicines=[
- {name:"Belladonna",keywords:["fever","headache"],type:"acute"},
- {name:"Aconitum",keywords:["fever","fear"],type:"acute"},
- {name:"Bryonia",keywords:["pain","movement"],type:"acute"},
- {name:"Rhus Tox",keywords:["joint","stiff"],type:"chronic"},
- {name:"Arsenicum",keywords:["burning","weak"],type:"chronic"}
+{
+ name:"Belladonna",
+ keywords:["fever","headache","heat","throbbing"],
+ keynotes:["Sudden onset","High fever","Throbbing pain","Red face"],
+ type:"acute"
+},
+{
+ name:"Aconitum Napellus",
+ keywords:["fever","cold","fear","anxiety"],
+ keynotes:["Sudden illness","Fear of death","Restlessness"],
+ type:"acute"
+},
+{
+ name:"Bryonia",
+ keywords:["pain","movement","dry","thirst"],
+ keynotes:["Pain worse by motion","Dryness","Better rest"],
+ type:"acute"
+},
+{
+ name:"Rhus Toxicodendron",
+ keywords:["joint","stiff","rest","movement"],
+ keynotes:["Stiffness after rest","Better by motion","Restless"],
+ type:"chronic"
+},
+{
+ name:"Arsenicum Album",
+ keywords:["burning","weak","anxiety","restless"],
+ keynotes:["Burning pains","Great weakness","Anxiety"],
+ type:"chronic"
+}
 ];
 
 let lastResults=[];
@@ -110,29 +148,46 @@ let lastResults=[];
 function searchMedicine(){
  const text=symptomInput.value.toLowerCase();
  medicineResult.innerHTML="";
- lastResults=medicines.map(m=>{
-  let score=0;
-  m.keywords.forEach(k=>{if(text.includes(k))score++});
-  return {...m,score};
- }).sort((a,b)=>b.score-a.score).slice(0,5);
+ lastResults=[];
+
+ medicines.forEach(m=>{
+  let matched=[];
+  m.keywords.forEach(k=>{ if(text.includes(k)) matched.push(k); });
+  if(matched.length){
+   lastResults.push({...m,matched});
+  }
+ });
+
+ lastResults.sort((a,b)=>b.matched.length-a.matched.length);
+ lastResults=lastResults.slice(0,5);
 
  lastResults.forEach((m,i)=>{
   medicineResult.innerHTML+=`
    <div class="card">
-    <b>${i+1}. ${m.name}</b><br>
-    Potency: ${suggestPotency(m)}<br>
-    Dosage: ${suggestDosage()}
-   </div>`;
- });
-}
+    <div class="flex justify-between items-center">
+     <b class="text-lg">${i+1}. ${m.name}</b>
+     <span class="badge">${m.type.toUpperCase()}</span>
+    </div>
 
-/* ================= DOSAGE LOGIC ================= */
-function suggestPotency(m){
- if(ptype.value==="acute") return "30C";
- return "200C";
-}
-function suggestDosage(){
- return "3 pills, 2 times daily";
+    <div class="mt-2">
+     <b class="text-sm">Matched Symptoms:</b><br>
+     ${m.matched.map(x=>`<span class="badge">${x}</span>`).join("")}
+    </div>
+
+    <div class="mt-3 text-sm">
+     <b>Keynote Symptoms:</b>
+     <ul class="list-disc ml-5 mt-1">
+      ${m.keynotes.map(k=>`<li>${k}</li>`).join("")}
+     </ul>
+    </div>
+
+    <div class="mt-3 text-sm grid grid-cols-2 gap-4">
+     <div><b>Potency:</b> ${ptype.value==="acute"?"30C":"200C"}</div>
+     <div><b>Dosage:</b> 3 pills × 2 daily</div>
+    </div>
+   </div>
+  `;
+ });
 }
 
 /* ================= PDF ================= */
@@ -141,30 +196,24 @@ function generatePDF(){
  const doc=new jsPDF();
  let y=20;
 
- if(savedLogo){
-  doc.addImage(savedLogo,"PNG",20,10,30,30);
-  y=50;
- }
-
  doc.setFontSize(16);
- doc.text("Homeopathic Prescription",70,25);
+ doc.text("Homeopathic Prescription",20,y); y+=10;
+
  doc.setFontSize(11);
- doc.text(`Doctor: ${doctorName}`,20,y);
- y+=7;
- doc.text(`Patient: ${pname.value}`,20,y); y+=7;
- doc.text(`Age: ${page.value}`,20,y); y+=7;
+ doc.text(`Patient: ${pname.value}`,20,y); y+=6;
+ doc.text(`Age: ${page.value}`,20,y); y+=6;
  doc.text(`Complaint: ${pcomplaint.value}`,20,y); y+=10;
 
- doc.text("Medicines:",20,y); y+=7;
+ doc.text("Selected Medicines (Based on Symptoms):",20,y); y+=8;
+
  lastResults.forEach((m,i)=>{
-  doc.text(`${i+1}. ${m.name} ${suggestPotency(m)} – ${suggestDosage()}`,20,y);
-  y+=6;
+  doc.text(`${i+1}. ${m.name}`,20,y); y+=6;
+  doc.text(`Keynotes: ${m.keynotes.join(", ")}`,25,y); y+=6;
+  doc.text(`Matched: ${m.matched.join(", ")}`,25,y); y+=8;
  });
 
  doc.setFontSize(9);
- doc.text("Signature:",20,270);
- doc.text(doctorName,50,270);
- doc.text("Educational support only.",20,280);
+ doc.text("Clinical decision-support only.",20,280);
  doc.save("Prescription.pdf");
 }
 </script>
